@@ -1,0 +1,18 @@
+﻿version: "3.8"
+
+services:
+  solana-guardian:
+    build: .
+    container_name: solana_defi_guardian
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+      - SOLANA_GEYSER_GRPC_URL=grpc://yellowstone-mainnet.helius.xyz:443
+      - JITO_BLOCK_ENGINE_URL=https://mainnet.block-engine.jito.wtf/api/v1/bundles
+      - KMS_PROVIDER=local_simulated
+      - SQUADS_MULTISIG_PROGRAM_ID=SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf
+    volumes:
+      - ./logs:/app/logs

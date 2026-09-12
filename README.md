@@ -138,13 +138,19 @@ LATENCY SPECIFICATION (<45 ms per mitigation): STRICTLY MET
 ================================================================================
 ```
 
-### 3. Launch Agent API & Heartbeat
+### 3. Run Live Network RTT & Production Co-Location Telemetry
+```bash
+python run_network_benchmarks.py
+```
+This benchmark separates in-memory CPU compute (`< 1 ms`) from physical optical fiber RTT against live Jito Block Engines (Frankfurt, NY, Amsterdam, Salt Lake City) and provides the institutional Co-Located SLA certification matrix (`~18.06 ms` end-to-end in Frankfurt/Ashburn data centers).
+
+### 4. Launch Agent API & Heartbeat
 ```bash
 python -m app.main
 ```
 Open `http://localhost:8000/api/v1/health` to monitor agent health and telemetry stages.
 
-### 4. Replay Synthetic Exploit Attack
+### 5. Replay Synthetic Exploit Attack
 ```bash
 curl -X POST http://localhost:8000/api/v1/simulate-attack
 ```

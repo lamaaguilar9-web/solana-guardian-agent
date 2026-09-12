@@ -5,6 +5,11 @@
 [![Jito MEV](https://img.shields.io/badge/Execution-Jito%20MEV%20Bundles-blue?style=for-the-badge)](https://jito.wtf)
 [![Oracles](https://img.shields.io/badge/Oracles-Pyth%20%7C%20Switchboard-orange?style=for-the-badge)](https://pyth.network)
 [![Multisig](https://img.shields.io/badge/Governance-Squads%20Multisig-yellow?style=for-the-badge)](https://squads.so)
+[![Live Cloud Demo](https://img.shields.io/badge/Live%20Demo-VPS%20Active%2024%2F7-emerald?style=for-the-badge&logo=fastapi)](http://2.25.121.124:8000)
+[![Watch Demo Video](https://img.shields.io/badge/▶_Watch_Demo_Video-Loom-625df5?style=for-the-badge&logo=loom&logoColor=white)](https://www.loom.com/share/e89fe7cc42f84acead0643fc4853e26c)
+
+🌐 **Live 24/7 Cloud Command Center:** [http://2.25.121.124:8000](http://2.25.121.124:8000)  
+🎥 **Interactive Video Walkthrough (Loom):** [https://www.loom.com/share/e89fe7cc42f84acead0643fc4853e26c](https://www.loom.com/share/e89fe7cc42f84acead0643fc4853e26c)
 
 Autonomous, ultra-low latency security guardian engineered for Solana lending, vault, and liquidity protocols (e.g., Kamino, Marginfi, Save/Solend). Designed to operate at the execution speed of HFT and MEV searchers, intercepting flash loans, oracle desynchronization exploits, and abnormal vault drains within the same slot.
 

@@ -11,17 +11,17 @@ class Settings(BaseSettings):
     
     # 1. Ingestion (Yellowstone Geyser gRPC & Solana RPC)
     SOLANA_RPC_URL: str = Field(default="https://api.mainnet-beta.solana.com", env="SOLANA_RPC_URL")
-    SOLANA_GEYSER_GRPC_URL: str = Field(default="grpc://yellowstone-mainnet.helius.xyz:443", env="SOLANA_GEYSER_GRPC_URL")
+    SOLANA_GEYSER_GRPC_URL: str = Field(default="grpc://ashburn.helius.xyz:443", env="SOLANA_GEYSER_GRPC_URL")  # Ashburn VA corridor
     GEYSER_AUTH_TOKEN: Optional[str] = Field(default=None, env="GEYSER_AUTH_TOKEN")
     
-    # 2. Execution & Jito MEV
-    JITO_BLOCK_ENGINE_URL: str = Field(default="https://mainnet.block-engine.jito.wtf/api/v1/bundles", env="JITO_BLOCK_ENGINE_URL")
+    # 2. Execution & Jito MEV (US-East Peering)
+    JITO_BLOCK_ENGINE_URL: str = Field(default="https://ny.mainnet.block-engine.jito.wtf/api/v1/bundles", env="JITO_BLOCK_ENGINE_URL")  # Primary NY Relay
+    JITO_PRIMARY_ENDPOINT: str = "https://ny.mainnet.block-engine.jito.wtf/api/v1/bundles"
     JITO_REGIONAL_ENDPOINTS: list = [
-        "https://frankfurt.mainnet.block-engine.jito.wtf",
-        "https://ny.mainnet.block-engine.jito.wtf",
-        "https://slc.mainnet.block-engine.jito.wtf",
-        "https://amsterdam.mainnet.block-engine.jito.wtf",
-        "https://tokyo.mainnet.block-engine.jito.wtf"
+        "https://ny.mainnet.block-engine.jito.wtf",        # Primary: US-East / New York (2-12 ms)
+        "https://slc.mainnet.block-engine.jito.wtf",       # Secondary: Salt Lake City
+        "https://frankfurt.mainnet.block-engine.jito.wtf", # Secondary: Frankfurt
+        "https://amsterdam.mainnet.block-engine.jito.wtf"  # Parallel: Amsterdam
     ]
     MAX_PRIORITY_FEE_LAMPORTS: int = Field(default=2_000_000_000, env="MAX_PRIORITY_FEE_LAMPORTS")  # 2.0 SOL Cap
     DEFAULT_JITO_TIP_LAMPORTS: int = Field(default=100_000, env="DEFAULT_JITO_TIP_LAMPORTS")

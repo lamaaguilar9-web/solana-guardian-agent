@@ -337,7 +337,7 @@ DASHBOARD_HTML = """
 
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return HTML_TEMPLATE
+    return DASHBOARD_HTML
 
 @app.post("/api/v1/simulate-attack")
 def run_attack_simulation():

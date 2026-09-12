@@ -1,4 +1,4 @@
-﻿import os
+import os
 from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
@@ -16,8 +16,22 @@ class Settings(BaseSettings):
     
     # 2. Execution & Jito MEV
     JITO_BLOCK_ENGINE_URL: str = Field(default="https://mainnet.block-engine.jito.wtf/api/v1/bundles", env="JITO_BLOCK_ENGINE_URL")
-    MAX_PRIORITY_FEE_LAMPORTS: int = Field(default=5_000_000, env="MAX_PRIORITY_FEE_LAMPORTS")
+    JITO_REGIONAL_ENDPOINTS: list = [
+        "https://frankfurt.mainnet.block-engine.jito.wtf",
+        "https://ny.mainnet.block-engine.jito.wtf",
+        "https://slc.mainnet.block-engine.jito.wtf",
+        "https://amsterdam.mainnet.block-engine.jito.wtf",
+        "https://tokyo.mainnet.block-engine.jito.wtf"
+    ]
+    MAX_PRIORITY_FEE_LAMPORTS: int = Field(default=2_000_000_000, env="MAX_PRIORITY_FEE_LAMPORTS")  # 2.0 SOL Cap
     DEFAULT_JITO_TIP_LAMPORTS: int = Field(default=100_000, env="DEFAULT_JITO_TIP_LAMPORTS")
+    JITO_TIP_P99_LAMPORTS: int = Field(default=5_000_000, env="JITO_TIP_P99_LAMPORTS")  # p99 floor baseline
+    EMERGENCY_FIXED_TIP_LAMPORTS: int = Field(default=1_000_000_000, env="EMERGENCY_FIXED_TIP_LAMPORTS")  # 1.0 SOL emergency tip
+    
+    # Invariant Filters (Exploit vs Legitimate Liquidations)
+    OUTFLOW_EPSILON_INVARIANT: float = Field(default=0.05, env="OUTFLOW_EPSILON_INVARIANT")  # Debt repaid / collateral threshold
+    LENDING_PROGRAM_ID: str = Field(default="Kamino111111111111111111111111111111111111", env="LENDING_PROGRAM_ID")
+    LENDING_MARKET_PUBKEY: str = Field(default="7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF", env="LENDING_MARKET_PUBKEY")
     
     # 3. Key Management & RBAC
     KMS_PROVIDER: str = Field(default="local_simulated", env="KMS_PROVIDER")

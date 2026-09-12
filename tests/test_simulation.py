@@ -1,4 +1,4 @@
-﻿from app.core.simulator import StateSimulator
+from app.core.simulator import StateSimulator
 from app.security.kms_signer import KMSSecuritySigner
 from app.core.jito_executor import JitoMEVExecutor
 
@@ -35,8 +35,22 @@ def test_jito_mev_bundle_dispatch():
     executor = JitoMEVExecutor()
     fake_kms = {"signature_hex": "0xabcdef123456"}
     
-    bundle = executor.dispatch_emergency_bundle("USDC", fake_kms, slot=446058300)
+    # 1. Normal VaR-scaled dynamic tip:
+    # VaR = $2,000,000, SOL = $140 -> VaR in SOL = 14,285 SOL = 1.428e13 lamports
+    # VaR * 0.005 is high, capped at MAX_PRIORITY_FEE (2 SOL = 2,000,000,000 lamports)
+    bundle = executor.dispatch_emergency_bundle("USDC", fake_kms, slot=446058300, value_at_risk_usd=2_000_000.0)
     assert bundle["execution_status"] == "COMMITTED_IN_NEXT_SLOT"
+    assert bundle["channel"] == "gRPC_Direct_Block_Engine_Stream"
+    assert len(bundle["regional_endpoints_broadcasted"]) >= 4
     assert bundle["protocol_wide_halt"] is False
     assert bundle["isolated_asset"] == "USDC"
+    assert "pause_asset" in bundle["action_executed"]
+    assert "Instruction" in bundle["anchor_instruction"]
     assert bundle["dispatch_latency_ms"] < 25.0
+
+    # 2. Severe drain triggers EMERGENCY_FIXED tip
+    severe_bundle = executor.dispatch_emergency_bundle(
+        "USDC", fake_kms, slot=446058301, value_at_risk_usd=10_000_000.0, is_severe_drain=True
+    )
+    assert severe_bundle["tip_strategy"] == "EMERGENCY_FIXED"
+    assert severe_bundle["priority_tip_lamports"] == 1_000_000_000  # 1.0 SOL fixed emergency tip

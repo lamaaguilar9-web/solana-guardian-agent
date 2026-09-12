@@ -1,7 +1,16 @@
-﻿import sys
+import sys
 import time
-from tests.test_detector import test_outflow_velocity_threshold, test_compound_exploit_detection
-from tests.test_simulation import test_granular_pause_simulation, test_asymmetric_squads_unpause_enforcement, test_jito_mev_bundle_dispatch
+from tests.test_detector import (
+    test_outflow_velocity_threshold,
+    test_compound_exploit_detection,
+    test_liquidation_wave_vs_exploit_drain,
+    test_probing_transaction_heuristics
+)
+from tests.test_simulation import (
+    test_granular_pause_simulation,
+    test_asymmetric_squads_unpause_enforcement,
+    test_jito_mev_bundle_dispatch
+)
 
 def run_all():
     print("================================================================================")
@@ -10,6 +19,8 @@ def run_all():
     tests = [
         ("test_outflow_velocity_threshold", test_outflow_velocity_threshold),
         ("test_compound_exploit_detection", test_compound_exploit_detection),
+        ("test_liquidation_wave_vs_exploit_drain", test_liquidation_wave_vs_exploit_drain),
+        ("test_probing_transaction_heuristics", test_probing_transaction_heuristics),
         ("test_granular_pause_simulation", test_granular_pause_simulation),
         ("test_asymmetric_squads_unpause_enforcement", test_asymmetric_squads_unpause_enforcement),
         ("test_jito_mev_bundle_dispatch", test_jito_mev_bundle_dispatch)

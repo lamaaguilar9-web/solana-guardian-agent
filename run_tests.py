@@ -11,6 +11,11 @@ from tests.test_simulation import (
     test_asymmetric_squads_unpause_enforcement,
     test_jito_mev_bundle_dispatch
 )
+from tests.test_protocol_adapters import (
+    test_anchor_discriminator_exact_resolution,
+    test_direct_signer_vs_delegated_pda_cpi,
+    test_zero_copy_reserve_header_fastpath
+)
 
 def run_all():
     print("================================================================================")
@@ -23,7 +28,10 @@ def run_all():
         ("test_probing_transaction_heuristics", test_probing_transaction_heuristics),
         ("test_granular_pause_simulation", test_granular_pause_simulation),
         ("test_asymmetric_squads_unpause_enforcement", test_asymmetric_squads_unpause_enforcement),
-        ("test_jito_mev_bundle_dispatch", test_jito_mev_bundle_dispatch)
+        ("test_jito_mev_bundle_dispatch", test_jito_mev_bundle_dispatch),
+        ("test_anchor_discriminator_exact_resolution", test_anchor_discriminator_exact_resolution),
+        ("test_direct_signer_vs_delegated_pda_cpi", test_direct_signer_vs_delegated_pda_cpi),
+        ("test_zero_copy_reserve_header_fastpath", test_zero_copy_reserve_header_fastpath)
     ]
 
     passed = 0

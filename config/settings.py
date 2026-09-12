@@ -30,8 +30,11 @@ class Settings(BaseSettings):
     
     # Invariant Filters (Exploit vs Legitimate Liquidations)
     OUTFLOW_EPSILON_INVARIANT: float = Field(default=0.05, env="OUTFLOW_EPSILON_INVARIANT")  # Debt repaid / collateral threshold
+    TARGET_PROTOCOL: str = Field(default="kamino_klend", env="TARGET_PROTOCOL")  # kamino_klend | marginfi | solend_save | generic_anchor
+    AUTHORIZATION_MODE: str = Field(default="direct_guardian_signer", env="AUTHORIZATION_MODE")  # direct_guardian_signer | delegated_pda_cpi
     LENDING_PROGRAM_ID: str = Field(default="Kamino111111111111111111111111111111111111", env="LENDING_PROGRAM_ID")
     LENDING_MARKET_PUBKEY: str = Field(default="7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF", env="LENDING_MARKET_PUBKEY")
+    GATEWAY_PROGRAM_ID: str = Field(default="Gate111111111111111111111111111111111111111", env="GATEWAY_PROGRAM_ID")
     
     # 3. Key Management & RBAC
     KMS_PROVIDER: str = Field(default="local_simulated", env="KMS_PROVIDER")

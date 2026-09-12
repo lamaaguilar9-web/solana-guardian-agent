@@ -119,18 +119,22 @@ class JitoMEVExecutor:
             is_severe_drain=is_severe_drain
         )
 
-        # Generate Anchor Instruction
+        # Generate Anchor Instruction using verified IDL & Authorization Resolver
+        from app.core.protocol_adapters import AnchorInstructionResolver
+        
+        resolver = AnchorInstructionResolver()
         guardian_pk = Pubkey("GuardianKey11111111111111111111111111111111")
         market_pk = Pubkey(settings.LENDING_MARKET_PUBKEY)
         reserve_pk = Pubkey(f"Reserve{asset_target}11111111111111111111111111111")
         program_pk = Pubkey(settings.LENDING_PROGRAM_ID)
 
-        ix = build_pause_ix(
+        resolved_ix_data = resolver.build_instruction(
             program_id=program_pk,
             guardian_pubkey=guardian_pk,
             lending_market_pubkey=market_pk,
             reserve_pubkey=reserve_pk
         )
+        ix = resolved_ix_data["instruction"]
         
         bundle_seed = f"JITO_BUNDLE_{asset_target}_{slot}_{kms_signature['signature_hex']}_{dynamic_fee}".encode()
         bundle_hash = hashlib.sha256(bundle_seed).hexdigest()
@@ -143,7 +147,10 @@ class JitoMEVExecutor:
             "channel": "gRPC_Direct_Block_Engine_Stream",
             "regional_endpoints_broadcasted": self.regional_endpoints,
             "jito_bundle_hash": "bundle_" + bundle_hash[:32],
-            "action_executed": f"pause_asset('{asset_target}')",
+            "action_executed": f"{resolved_ix_data['instruction_name']}('{asset_target}')",
+            "target_protocol": resolved_ix_data["protocol_name"],
+            "authorization_mode": resolved_ix_data["authorization_mode"],
+            "discriminator_hex": resolved_ix_data["discriminator_hex"],
             "anchor_instruction": repr(ix),
             "priority_tip_lamports": dynamic_fee,
             "tip_strategy": "EMERGENCY_FIXED" if is_severe_drain else "DYNAMIC_P99_VAR_SCALED",

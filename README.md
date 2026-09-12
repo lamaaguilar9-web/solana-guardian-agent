@@ -84,18 +84,20 @@ solana-guardian-agent/
 │   │   └── v1/
 │   │       └── health.py     # Heartbeat & diagnostic API (/api/v1/health)
 │   ├── core/
-│   │   ├── geyser_client.py  # Yellowstone Geyser gRPC ingestion client
-│   │   ├── detector.py       # Invariant outflow velocity & probing heuristics
-│   │   ├── simulator.py      # In-memory protocol state pre-simulator
-│   │   └── jito_executor.py  # Regional Jito MEV bundles & Anchor pause_ix builder
+│   │   ├── geyser_client.py     # Yellowstone Geyser gRPC ingestion client
+│   │   ├── detector.py          # Invariant outflow velocity & probing heuristics
+│   │   ├── simulator.py         # In-memory protocol state pre-simulator
+│   │   ├── protocol_adapters.py # Anchor IDL resolver, discriminators & Zero-Copy
+│   │   └── jito_executor.py     # Regional Jito MEV bundles & Anchor instruction builder
 │   ├── security/
 │   │   └── kms_signer.py     # Cloud KMS / HSM RBAC signer & Squads gate
 │   └── services/
 │       ├── oracle_service.py # Pyth & Switchboard multi-oracle cross-checker
 │       └── notifier.py       # Cryptographic JSON incident proof & webhook dispatcher
 └── tests/
-    ├── test_detector.py      # Outflow velocity, liquidation invariants & probing tests
-    └── test_simulation.py    # Sub-45ms latency, p99 tips & asymmetric unfreeze tests
+    ├── test_detector.py          # Outflow velocity, liquidation invariants & probing tests
+    ├── test_simulation.py        # Sub-45ms latency, p99 tips & asymmetric unfreeze tests
+    └── test_protocol_adapters.py # Discriminator resolution, dual auth & zero-copy tests
 ```
 
 ---
@@ -120,15 +122,18 @@ Expected output:
 ================================================================================
         SOLANA DEFI GUARDIAN AGENT - AUTOMATED VERIFICATION SUITE              
 ================================================================================
-  [PASS] test_outflow_velocity_threshold               in 0.05 ms
-  [PASS] test_compound_exploit_detection               in 0.07 ms
-  [PASS] test_liquidation_wave_vs_exploit_drain        in 0.04 ms
-  [PASS] test_probing_transaction_heuristics           in 0.03 ms
-  [PASS] test_granular_pause_simulation                in 0.01 ms
-  [PASS] test_asymmetric_squads_unpause_enforcement    in 0.07 ms
-  [PASS] test_jito_mev_bundle_dispatch                 in 0.08 ms
+  [PASS] test_outflow_velocity_threshold               in 0.07 ms
+  [PASS] test_compound_exploit_detection               in 0.09 ms
+  [PASS] test_liquidation_wave_vs_exploit_drain        in 0.05 ms
+  [PASS] test_probing_transaction_heuristics           in 0.05 ms
+  [PASS] test_granular_pause_simulation                in 0.02 ms
+  [PASS] test_asymmetric_squads_unpause_enforcement    in 0.08 ms
+  [PASS] test_jito_mev_bundle_dispatch                 in 0.16 ms
+  [PASS] test_anchor_discriminator_exact_resolution    in 0.05 ms
+  [PASS] test_direct_signer_vs_delegated_pda_cpi       in 0.09 ms
+  [PASS] test_zero_copy_reserve_header_fastpath        in 0.02 ms
 --------------------------------------------------------------------------------
-RESULT: 7/7 tests passed in 0.41 ms
+RESULT: 10/10 tests passed in 0.79 ms
 LATENCY SPECIFICATION (<45 ms per mitigation): STRICTLY MET
 ================================================================================
 ```

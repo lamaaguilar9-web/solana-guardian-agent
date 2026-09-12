@@ -44,7 +44,9 @@ def test_jito_mev_bundle_dispatch():
     assert len(bundle["regional_endpoints_broadcasted"]) >= 4
     assert bundle["protocol_wide_halt"] is False
     assert bundle["isolated_asset"] == "USDC"
-    assert "pause_asset" in bundle["action_executed"]
+    assert ("pause_reserve" in bundle["action_executed"] or "pause_asset" in bundle["action_executed"])
+    assert bundle["target_protocol"] in ["kamino_klend", "generic_anchor", "marginfi", "solend_save"]
+    assert len(bundle["discriminator_hex"]) == 16  # 8 bytes hex
     assert "Instruction" in bundle["anchor_instruction"]
     assert bundle["dispatch_latency_ms"] < 25.0
 

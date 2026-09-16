@@ -1,0 +1,19 @@
+[package]
+name = "solana_guardian"
+version = "1.4.1"
+description = "Solana DeFi Guardian Agent - Non-custodial autonomous circuit breaker with invoke_signed PDA CPI"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "solana_guardian"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"

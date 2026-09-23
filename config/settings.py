@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # System Info
     PROJECT_NAME: str = "Solana DeFi Guardian Agent"
-    VERSION: str = "1.0.0"
+    VERSION: str = "1.4.1"
     ENVIRONMENT: str = "production"
     
     # 1. Ingestion (Yellowstone Geyser gRPC & Solana RPC)

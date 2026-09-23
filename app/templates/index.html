@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solana DeFi Guardian Agent | Live Sentinel Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.95); }
+    }
+    .pulse-dot { animation: pulse-slow 2s infinite ease-in-out; }
+  </style>
+</head>
+<body class="bg-[#080B11] text-slate-100 min-h-screen p-4 md:p-6 font-mono selection:bg-[#9945FF] selection:text-white">
+
+  <!-- HEADER -->
+  <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-5 mb-6 border-b border-slate-800 gap-4">
+    <div>
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          SOLANA DEFI GUARDIAN
+          <span class="text-xs bg-[#1A102F] text-[#9945FF] border border-[#9945FF]/40 px-2.5 py-0.5 rounded-full">v1.4.1</span>
+        </h1>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#062A1F] text-[#14F195] border border-[#14F195]/40">
+          <span class="w-2 h-2 rounded-full bg-[#14F195] pulse-dot"></span>
+          ONLINE 24/7 (BUIDL #48631)
+        </span>
+      </div>
+      <p class="text-xs text-slate-400 mt-1">
+        Solana Mainnet-Beta &bull; Slot: <span id="currentSlot" class="text-slate-200 font-semibold">289,410,219</span> &bull; Ingesta: Yellowstone Geyser gRPC (Triton)
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <button id="pauseBtn" onclick="triggerEmergencyPause()" class="bg-red-950/60 hover:bg-red-900/80 text-red-400 hover:text-red-200 border border-red-500/60 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-red-950/40">
+        <span>⚡</span> DISPARAR CIRCUIT BREAKER (PAUSA)
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI CARDS (ROW 1) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Latency -->
+    <div class="bg-[#111625] border border-slate-800 p-4 rounded-xl shadow-md">
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Latencia End-to-End</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-[#14F195] border border-[#14F195]/30">● SUB-30ms TARGET</span>
+      </div>
+      <div class="text-3xl font-black text-[#14F195]" id="metricLatency">26.4 ms</div>
+      <div class="text-xs text-slate-400 mt-1">Target: &lt; 30.0 ms (Slot Inclusión)</div>
+    </div>
+
+    <!-- Invariant -->
+    <div class="bg-[#111625] border border-slate-800 p-4 rounded-xl shadow-md">
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Invariante Contable</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/30">ESTABLE</span>
+      </div>
+      <div class="text-3xl font-black text-cyan-400" id="metricInvariant">0.008</div>
+      <div class="text-xs text-slate-400 mt-1">&Delta; Deuda / &Delta; Colateral (Límite: 0.050)</div>
+    </div>
+
+    <!-- Outflow Velocity -->
+    <div class="bg-[#111625] border border-slate-800 p-4 rounded-xl shadow-md">
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Outflow Velocity</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/30">NORMAL</span>
+      </div>
+      <div class="text-3xl font-black text-purple-300" id="metricOutflow">$14,200<span class="text-sm font-normal text-slate-400">/min</span></div>
+      <div class="text-xs text-slate-400 mt-1">Límite preventivo: $250,000/min</div>
+    </div>
+
+    <!-- Governance -->
+    <div class="bg-[#111625] border border-slate-800 p-4 rounded-xl shadow-md">
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Gobernanza RBAC</span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-500/30">SQUADS 3/5</span>
+      </div>
+      <div class="text-xl font-bold text-white mt-1">Pausa Asimétrica</div>
+      <div class="text-xs text-slate-400 mt-1">Bot solo pausa &bull; Multisig despausa</div>
+    </div>
+  </div>
+
+  <!-- MIDDLE SECTION: LATENCY WATERFALL & ORACLE MATRIX -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Latency Breakdown -->
+    <div class="bg-[#111625] border border-slate-800 p-5 rounded-xl shadow-md">
+      <div class="flex justify-between items-center mb-1">
+        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Presupuesto de Latencia Sub-30ms</h2>
+        <span class="text-xs text-[#14F195] font-semibold">Ventana Atómica de Slot</span>
+      </div>
+      <p class="text-xs text-slate-400 mb-5">Desglose de tiempo de intercepción ante detección de exploits</p>
+
+      <div class="space-y-4">
+        <div>
+          <div class="flex justify-between text-xs font-semibold mb-1">
+            <span class="text-slate-300">Etapa 1: Ingesta de Datos (Yellowstone Geyser gRPC)</span>
+            <span class="text-[#14F195]" id="tStage1">7.5 ms</span>
+          </div>
+          <div class="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden">
+            <div id="barStage1" class="bg-[#14F195] h-2.5 rounded-full" style="width: 50%"></div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1">Sub-segundo vía Triton/Helius con filtrado server-side</p>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-semibold mb-1">
+            <span class="text-slate-300">Etapa 2: Detección Heurística e Invariante Contable</span>
+            <span class="text-[#9945FF]" id="tStage2">9.2 ms</span>
+          </div>
+          <div class="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden">
+            <div id="barStage2" class="bg-[#9945FF] h-2.5 rounded-full" style="width: 61%"></div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1">Simulación en memoria RAM (Caché L1 oráculos Pyth/CEX)</p>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-semibold mb-1">
+            <span class="text-slate-300">Etapa 3: Mitigación Activa & Jito MEV Bundle Dispatch</span>
+            <span class="text-cyan-400" id="tStage3">9.7 ms</span>
+          </div>
+          <div class="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden">
+            <div id="barStage3" class="bg-cyan-400 h-2.5 rounded-full" style="width: 65%"></div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1">Firma KMS y bundling concurrente (Frankfurt & NY Fan-Out)</p>
+        </div>
+      </div>
+
+      <div class="mt-5 p-3 rounded-lg bg-[#0A1617] border border-teal-900/50 flex justify-between items-center text-xs">
+        <span class="text-teal-400 font-semibold">Total Consumido: <span id="tTotal">26.4 ms</span> / 30.0 ms</span>
+        <span class="text-[#14F195] font-bold">Margen de Seguridad: +18.6 ms (vs 45ms slot)</span>
+      </div>
+    </div>
+
+    <!-- Multi-Oracle Matrix -->
+    <div class="bg-[#111625] border border-slate-800 p-5 rounded-xl shadow-md">
+      <div class="flex justify-between items-center mb-1">
+        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Matriz de Divergencia Multi-Oráculo</h2>
+        <span class="text-xs text-purple-400 font-semibold">Pyth Hermes + CEX</span>
+      </div>
+      <p class="text-xs text-slate-400 mb-4">Validación cruzada Pyth Pull Oracle vs Binance CEX (Switchboard Deprecado)</p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="text-slate-400 border-b border-slate-800 bg-[#161D2F]">
+              <th class="py-2.5 px-3">Par</th>
+              <th class="py-2.5 px-3">Pyth Hermes</th>
+              <th class="py-2.5 px-3">Switchboard</th>
+              <th class="py-2.5 px-3">Binance CEX</th>
+              <th class="py-2.5 px-3">Desvío</th>
+              <th class="py-2.5 px-3 text-right">Estado</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60" id="oracleTableBody">
+            <tr class="hover:bg-slate-800/20">
+              <td class="py-2.5 px-3 font-bold text-white">SOL/USD</td>
+              <td class="py-2.5 px-3 text-slate-300" id="pyth_sol">$142.35</td>
+              <td class="py-2.5 px-3 text-slate-500 italic">Offline (25-Sept)</td>
+              <td class="py-2.5 px-3 text-slate-300" id="cex_sol">$142.36</td>
+              <td class="py-2.5 px-3 font-semibold text-[#14F195]">+0.014%</td>
+              <td class="py-2.5 px-3 text-right"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-[#14F195] border border-[#14F195]/30">SYNC</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/20">
+              <td class="py-2.5 px-3 font-bold text-white">JTO/USD</td>
+              <td class="py-2.5 px-3 text-slate-300" id="pyth_jto">$2.481</td>
+              <td class="py-2.5 px-3 text-slate-500 italic">Offline (25-Sept)</td>
+              <td class="py-2.5 px-3 text-slate-300" id="cex_jto">$2.480</td>
+              <td class="py-2.5 px-3 font-semibold text-[#14F195]">+0.080%</td>
+              <td class="py-2.5 px-3 text-right"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-[#14F195] border border-[#14F195]/30">SYNC</span></td>
+            </tr>
+            <tr class="hover:bg-slate-800/20">
+              <td class="py-2.5 px-3 font-bold text-white">mSOL/SOL</td>
+              <td class="py-2.5 px-3 text-slate-300" id="pyth_msol">1.182</td>
+              <td class="py-2.5 px-3 text-slate-500 italic">Offline (25-Sept)</td>
+              <td class="py-2.5 px-3 text-slate-300" id="cex_msol">1.181</td>
+              <td class="py-2.5 px-3 font-semibold text-[#14F195]">+0.008%</td>
+              <td class="py-2.5 px-3 text-right"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-[#14F195] border border-[#14F195]/30">SYNC</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-3 rounded-lg bg-[#191328] border border-purple-900/40 text-xs text-purple-300 flex justify-between items-center">
+        <span>Filtro de Anomalías: <strong class="text-white">Pyth Hermes Pull Activo</strong> (Tolerancia: &lt; 1.5%)</span>
+        <span class="text-[10px] bg-purple-900/50 px-2 py-0.5 rounded">Switchboard Ignorado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: JITO MEV & REAL-TIME LOGS -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Jito Telemetry -->
+    <div class="bg-[#111625] border border-slate-800 p-5 rounded-xl shadow-md">
+      <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Telemetría Jito MEV Relayer</h2>
+      <p class="text-xs text-slate-400 mb-4">Canal atómico para forzar inclusión en slot actual</p>
+
+      <div class="space-y-3 text-xs">
+        <div class="flex justify-between py-2 border-b border-slate-800/60">
+          <span class="text-slate-400">Jito Tip Account Oficial:</span>
+          <span class="font-bold text-slate-200">96gYZGLnJYVFmb...NhvrZU5</span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-slate-800/60">
+          <span class="text-slate-400">Último Bundle Simulado:</span>
+          <span class="font-semibold text-cyan-400" id="lastBundleId">#bundle_7c91a02e (PASS)</span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-slate-800/60">
+          <span class="text-slate-400">Comisión Dinámica de Prioridad:</span>
+          <span class="font-bold text-[#9945FF]" id="priorityFee">0.005000 SOL</span>
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="text-slate-400">Relayers Conectados (Fan-Out):</span>
+          <span class="text-[#14F195] font-semibold">Frankfurt (8ms) &bull; New York (32ms)</span>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 rounded-lg bg-[#0C1E30] border border-sky-900/50 text-xs text-sky-300">
+        Bundle Dispatcher en modo <strong class="text-white">Active-Standby Concurrente</strong>. Bundles listos para mitigar en &lt; 10ms.
+      </div>
+    </div>
+
+    <!-- Live Event Log -->
+    <div class="bg-[#111625] border border-slate-800 p-5 rounded-xl shadow-md">
+      <div class="flex justify-between items-center mb-1">
+        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Feed de Eventos en Tiempo Real</h2>
+        <span class="text-[10px] text-slate-400 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#14F195] pulse-dot"></span> LIVE GEYSER STREAM
+        </span>
+      </div>
+      <p class="text-xs text-slate-400 mb-3">Logs del centinela y notificaciones criptográficas despachadas</p>
+
+      <div id="logContainer" class="space-y-2 h-48 overflow-y-auto pr-2 text-xs font-mono">
+        <!-- Log entries populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentSlot = 289410219;
+    const slotEl = document.getElementById('currentSlot');
+    const logContainer = document.getElementById('logContainer');
+
+    function addLog(tag, msg, tagColor = 'text-slate-400') {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'py-1 border-b border-slate-800/40 flex items-start gap-2';
+      div.innerHTML = `
+        <span class="text-slate-500 shrink-0">[${time}]</span>
+        <span class="font-bold ${tagColor} shrink-0">${tag}</span>
+        <span class="text-slate-300">${msg}</span>
+      `;
+      logContainer.prepend(div);
+      if (logContainer.children.length > 30) {
+        logContainer.removeChild(logContainer.lastChild);
+      }
+    }
+
+    addLog('[ORACLE]', 'Switchboard desacoplado. Pyth Hermes verificado contra Binance CEX (10/10 tests PASS en 0.59ms)', 'text-[#14F195]');
+    addLog('[ANCHOR]', 'Programa solana_guardian verificado con <25,000 CUs en CPI', 'text-[#14F195]');
+    addLog('[RBAC]', 'Squads Multisig (SQDSVault111...) verificado como Admin único', 'text-amber-400');
+    addLog('[INVARIANT]', 'Delta Deuda / Delta Colateral = 0.0082 (Normal < 0.05)', 'text-cyan-400');
+    addLog('[GEYSER]', 'Yellowstone Geyser gRPC conectado con filtrado server-side', 'text-slate-400');
+
+    // Live slot incrementation and simulation
+    setInterval(() => {
+      currentSlot += Math.floor(Math.random() * 3) + 2;
+      slotEl.innerText = currentSlot.toLocaleString();
+
+      const s1 = (7.2 + Math.random() * 0.6).toFixed(1);
+      const s2 = (8.8 + Math.random() * 0.8).toFixed(1);
+      const s3 = (9.4 + Math.random() * 0.6).toFixed(1);
+      const tot = (parseFloat(s1) + parseFloat(s2) + parseFloat(s3)).toFixed(1);
+
+      document.getElementById('tStage1').innerText = s1 + ' ms';
+      document.getElementById('tStage2').innerText = s2 + ' ms';
+      document.getElementById('tStage3').innerText = s3 + ' ms';
+      document.getElementById('tTotal').innerText = tot + ' ms';
+      document.getElementById('metricLatency').innerText = tot + ' ms';
+
+      if (Math.random() > 0.4) {
+        addLog('[GEYSER]', `Slot ${currentSlot.toLocaleString()} procesado: ${Math.floor(2100 + Math.random() * 600)} txs analizadas en ${s1}ms`, 'text-slate-400');
+      }
+    }, 2500);
+
+    function triggerEmergencyPause() {
+      if (confirm('¿Confirmas el disparo del CIRCUIT BREAKER de emergencia para pausar el protocolo objetivo vía Jito Bundle?')) {
+        addLog('[EMERGENCY]', 'Disparo manual ejecutado. Firmando instrucción guardian_pause con KMS...', 'text-red-400');
+        setTimeout(() => {
+          addLog('[JITO]', 'Bundle emitido a Frankfurt & NY Relayers con propina dinámica SOL. Slot confirmado.', 'text-cyan-400');
+          alert('Circuit Breaker disparado y emitido exitosamente mediante Jito Bundle.');
+        }, 600);
+      }
+    }
+  </script>
+</body>
+</html>

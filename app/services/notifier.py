@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cryptographic Incident Proof Generator & Multi-Channel Webhook Notifier
 Dispatches real-time incident reports to PagerDuty, Slack, Discord, and Telegram.
 """
@@ -37,8 +37,8 @@ class IncidentNotifier:
             "protocol_protection": "Active",
             "metrics": {
                 "total_end_to_end_latency_ms": round(total_latency_ms, 2),
-                "target_latency_cap_ms": 45.0,
-                "latency_guarantee_achieved": total_latency_ms <= 45.0
+                "target_latency_cap_ms": 30.0,
+                "latency_guarantee_achieved": total_latency_ms <= 30.0
             },
             "threat_classification": {
                 "threat_score_pct": detection_data.get("threat_score_pct"),

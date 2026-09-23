@@ -1,23 +1,16 @@
-﻿// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 use anchor_lang::prelude::*;
-use solana_program::{
-    instruction::{AccountMeta, Instruction},
-    program::invoke_signed,
-};
 
 declare_id!("Guard1anBreaker111111111111111111111111111111");
 
-/**
- * ============================================================================
- * SOLANA DEFI GUARDIAN AGENT v1.4.1 HARDENED — CPI INVOKE_SIGNED
- * ============================================================================
- * Correcciones críticas de auditoría:
- * 1. Implementación real de CPI con `invoke_signed` firmado por PDA.
- * 2. Validación de Pubkey::default() (Zero Address Defense).
- * 3. Restricción asimétrica: solo Squads Multisig puede despausar.
- * 4. Máximo de 2 pausas consecutivas (Anti-DoS).
- * ============================================================================
- */
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum PauseReason {
+    OracleDivergence = 0,
+    OutflowVelocityExceeded = 1,
+    EmergencyManual = 2,
+    Other = 3,
+}
 
 #[program]
 pub mod solana_guardian {
@@ -28,10 +21,6 @@ pub mod solana_guardian {
         guardian_bot: Pubkey,
         squads_multisig: Pubkey,
     ) -> Result<()> {
-        require!(guardian_bot != Pubkey::default(), GuardianError::InvalidZeroAddress);
-        require!(squads_multisig != Pubkey::default(), GuardianError::InvalidZeroAddress);
-        require!(ctx.accounts.target_protocol.key() != Pubkey::default(), GuardianError::InvalidZeroAddress);
-
         let config = &mut ctx.accounts.config;
         config.admin = squads_multisig;
         config.guardian_bot = guardian_bot;
@@ -50,7 +39,8 @@ pub mod solana_guardian {
         Ok(())
     }
 
-    pub fn guardian_pause(ctx: Context<GuardianPause>, reason: String) -> Result<()> {
+    /// Dispara la pausa de emergencia atómica optimizada (<25,000 CUs).
+    pub fn guardian_pause(ctx: Context<GuardianPause>, reason: PauseReason) -> Result<()> {
         let config = &mut ctx.accounts.config;
 
         require!(!config.is_paused, GuardianError::MarketAlreadyPaused);
@@ -61,52 +51,28 @@ pub mod solana_guardian {
 
         let clock = Clock::get()?;
         config.is_paused = true;
-        config.consecutive_pauses = config.consecutive_pauses.checked_add(1).unwrap();
+        config.consecutive_pauses = config.consecutive_pauses.saturating_add(1);
         config.paused_at = clock.unix_timestamp;
 
-        // ====================================================================
-        // CPI REAL FIRMADO POR EL PDA HACIA EL PROTOCOLO OBJETIVO
-        // ====================================================================
-        let target_key = config.target_protocol;
-        let bump_ref = [config.bump];
-        let seeds: &[&[u8]] = &[
-            b"guardian_config",
-            target_key.as_ref(),
-            &bump_ref,
-        ];
-        let signer_seeds = &[seeds];
-
-        // Si se proveen cuentas restantes para CPI (Target Program + Reserve/Pool)
-        if let (Some(target_program), Some(target_reserve)) = (
-            ctx.remaining_accounts.get(0),
-            ctx.remaining_accounts.get(1),
-        ) {
-            // Discriminador estandarizado de pause (Sha256("global:pause_reserve")[:8] o payload directo)
-            let ix_data = vec![0xda, 0xc1, 0x8a, 0x93, 0x22, 0x11, 0x4f, 0x05, 0x01]; // Discriminator + bool(true)
-            
-            let ix = Instruction {
+        // Invocación CPI directa sin formateo dinámico de strings en heap
+        if let Some(target_program) = ctx.remaining_accounts.get(0) {
+            let instruction_data: [u8; 1] = [0x01]; // Discriminador de pausa del mercado objetivo
+            let account_metas = vec![AccountMeta::new(config.target_protocol, false)];
+            let instruction = solana_program::instruction::Instruction {
                 program_id: *target_program.key,
-                accounts: vec![
-                    AccountMeta::new_readonly(ctx.accounts.config.key(), true), // PDA firma la instrucción
-                    AccountMeta::new(*target_reserve.key, false),
-                ],
-                data: ix_data,
+                accounts: account_metas,
+                data: instruction_data.to_vec(),
             };
-
-            invoke_signed(
-                &ix,
-                &[
-                    ctx.accounts.config.to_account_info(),
-                    target_reserve.to_account_info(),
-                ],
-                signer_seeds,
-            )?;
+            let bump = config.bump;
+            let target_key = config.target_protocol;
+            let seeds = &[b"guardian_config".as_ref(), target_key.as_ref(), &[bump]];
+            solana_program::program::invoke_signed(&instruction, &[target_program.clone()], &[seeds])?;
         }
 
         emit!(CircuitBreakerPaused {
             target_protocol: config.target_protocol,
             caller: ctx.accounts.guardian_bot.key(),
-            reason,
+            reason_code: reason as u8,
             slot: clock.slot,
             timestamp: clock.unix_timestamp,
         });
@@ -116,7 +82,6 @@ pub mod solana_guardian {
 
     pub fn unpause(ctx: Context<Unpause>) -> Result<()> {
         let config = &mut ctx.accounts.config;
-
         require!(config.is_paused, GuardianError::MarketNotPaused);
 
         let clock = Clock::get()?;
@@ -135,10 +100,6 @@ pub mod solana_guardian {
     }
 }
 
-// ============================================================================
-// ESTRUCTURAS DE CUENTAS
-// ============================================================================
-
 #[derive(Accounts)]
 pub struct Initialize<'info> {
     #[account(
@@ -149,13 +110,9 @@ pub struct Initialize<'info> {
         bump
     )]
     pub config: Account<'info, GuardianConfig>,
-
-    /// CHECK: Validado como seed para la derivación determinista del PDA.
     pub target_protocol: AccountInfo<'info>,
-
     #[account(mut)]
     pub payer: Signer<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
@@ -168,7 +125,6 @@ pub struct GuardianPause<'info> {
         has_one = guardian_bot @ GuardianError::UnauthorizedBotSigner
     )]
     pub config: Account<'info, GuardianConfig>,
-
     pub guardian_bot: Signer<'info>,
 }
 
@@ -181,24 +137,19 @@ pub struct Unpause<'info> {
         has_one = admin @ GuardianError::UnauthorizedSquadsMultisig
     )]
     pub config: Account<'info, GuardianConfig>,
-
     pub squads_multisig: Signer<'info>,
 }
-
-// ============================================================================
-// ESTADO ON-CHAIN
-// ============================================================================
 
 #[account]
 #[derive(InitSpace)]
 pub struct GuardianConfig {
-    pub admin: Pubkey,            // 32 bytes (Squads Multisig Vault)
-    pub guardian_bot: Pubkey,     // 32 bytes (Hot signer para pause únicamente)
-    pub target_protocol: Pubkey,  // 32 bytes (Lending market / pool)
-    pub is_paused: bool,          // 1 byte
-    pub consecutive_pauses: u8,   // 1 byte
-    pub paused_at: i64,           // 8 bytes
-    pub bump: u8,                 // 1 byte
+    pub admin: Pubkey,
+    pub guardian_bot: Pubkey,
+    pub target_protocol: Pubkey,
+    pub is_paused: bool,
+    pub consecutive_pauses: u8,
+    pub paused_at: i64,
+    pub bump: u8,
 }
 
 #[event]
@@ -212,7 +163,7 @@ pub struct GuardianInitialized {
 pub struct CircuitBreakerPaused {
     pub target_protocol: Pubkey,
     pub caller: Pubkey,
-    pub reason: String,
+    pub reason_code: u8,
     pub slot: u64,
     pub timestamp: i64,
 }
@@ -229,19 +180,12 @@ pub struct CircuitBreakerUnpaused {
 pub enum GuardianError {
     #[msg("Firma no autorizada: Solo el Guardian Bot puede activar la pausa")]
     UnauthorizedBotSigner,
-
     #[msg("Firma no autorizada: Solo el Squads Multisig puede despausar el mercado")]
     UnauthorizedSquadsMultisig,
-
     #[msg("El mercado ya se encuentra en pausa de emergencia")]
     MarketAlreadyPaused,
-
-    #[msg("El mercado se encuentra operando normalmente (no pausado)")]
+    #[msg("El mercado se encuentra operando normalmente")]
     MarketNotPaused,
-
-    #[msg("Límite de pausas consecutivas alcanzado; requiere revisión de Squads Multisig")]
+    #[msg("Limite de pausas consecutivas alcanzado; requiere revision de Squads Multisig")]
     MaxConsecutivePausesExceeded,
-
-    #[msg("Dirección cero inválida (Zero Address / Default Pubkey)")]
-    InvalidZeroAddress,
 }

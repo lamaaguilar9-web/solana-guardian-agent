@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter
+from fastapi import APIRouter
 import time
 from config.settings import settings
 
@@ -16,11 +16,11 @@ def health_check():
         "environment": settings.ENVIRONMENT,
         "heartbeat_timestamp": time.time(),
         "performance_profile": {
-            "target_latency": "< 45 ms",
+            "target_latency": "< 30 ms (Target: 26 ms)",
             "pipeline_stages": {
-                "stage_1_ingestion": "Yellowstone Geyser gRPC (< 15 ms)",
-                "stage_2_evaluation": "Anomaly & Oracle Cross-Check (< 15 ms)",
-                "stage_3_execution": "Cloud KMS & Jito MEV Bundle (< 15 ms)"
+                "stage_1_ingestion": "Yellowstone Geyser gRPC (< 8 ms)",
+                "stage_2_evaluation": "Anomaly & Oracle Pyth vs Binance CEX (< 6 ms)",
+                "stage_3_execution": "Cloud KMS & Jito MEV Bundle (< 12 ms)"
             }
         },
         "integrations": {

@@ -10,7 +10,7 @@ import asyncio
 import logging
 import time
 from typing import Dict, Optional, Any
-import aiohttp
+import httpx
 
 from config.settings import settings
 
@@ -25,42 +25,42 @@ class OracleService:
         max_divergence_pct: float = None,
         staleness_limit: int = None
     ):
-        self.pyth_hermes_url = pyth_hermes_url
-        self.binance_api_url = binance_api_url
+        self.pyth_hermes_url = pyth_hermes_url or getattr(settings, "PYTH_HERMES_URL", "https://hermes.pyth.network")
+        self.binance_api_url = binance_api_url or getattr(settings, "BINANCE_API_URL", "https://api.binance.com")
         self.switchboard_enabled = False  # Desactivado formalmente por cese de servicio 25-Sept-2026
         self.max_divergence_pct = max_divergence_pct or getattr(settings, "ORACLE_MAX_DIVERGENCE_PCT", 1.5)
         self.staleness_limit = staleness_limit or getattr(settings, "ORACLE_STALENESS_SECONDS", 120)
         self.cache: Dict[str, Dict[str, Any]] = {}
 
-    async def get_pyth_price(self, price_feed_id: str, session: aiohttp.ClientSession) -> Optional[float]:
+    async def get_pyth_price(self, price_feed_id: str, client: httpx.AsyncClient) -> Optional[float]:
         try:
             url = f"{self.pyth_hermes_url}/v2/updates/price/latest?ids[]={price_feed_id}"
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=2.0)) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    parsed = data["parsed"][0]["price"]
-                    price = float(parsed["price"]) * (10 ** int(parsed["expo"]))
-                    return price
+            resp = await client.get(url, timeout=2.0)
+            if resp.status_code == 200:
+                data = resp.json()
+                parsed = data["parsed"][0]["price"]
+                price = float(parsed["price"]) * (10 ** int(parsed["expo"]))
+                return price
         except Exception as e:
             logger.error(f"Error consultando Pyth Hermes ({price_feed_id}): {e}")
         return None
 
-    async def get_cex_reference_price(self, symbol: str, session: aiohttp.ClientSession) -> Optional[float]:
+    async def get_cex_reference_price(self, symbol: str, client: httpx.AsyncClient) -> Optional[float]:
         try:
             url = f"{self.binance_api_url}/api/v3/ticker/price?symbol={symbol}"
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=1.5)) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    return float(data["price"])
+            resp = await client.get(url, timeout=1.5)
+            if resp.status_code == 200:
+                data = resp.json()
+                return float(data["price"])
         except Exception as e:
             logger.error(f"Error consultando CEX Reference ({symbol}): {e}")
         return None
 
     async def evaluate_divergence(self, token_symbol: str, pyth_id: str, cex_pair: str) -> Dict[str, Any]:
-        async with aiohttp.ClientSession() as session:
+        async with httpx.AsyncClient() as client:
             pyth_price, cex_price = await asyncio.gather(
-                self.get_pyth_price(pyth_id, session),
-                self.get_cex_reference_price(cex_pair, session)
+                self.get_pyth_price(pyth_id, client),
+                self.get_cex_reference_price(cex_pair, client)
             )
 
         if not pyth_price or not cex_price:

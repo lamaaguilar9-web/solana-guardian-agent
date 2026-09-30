@@ -421,4 +421,7 @@ def run_attack_simulation():
 
 if __name__ == "__main__":
     print("Starting Solana DeFi Guardian Agent on port 8000...")
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=False)
+    import os
+    bind_host = os.getenv("GUARDIAN_HOST", "127.0.0.1")
+    print(f"Starting Solana DeFi Guardian Agent securely bound to {bind_host}:8000...")
+    uvicorn.run("app.main:app", host=bind_host, port=8000, reload=False)

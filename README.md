@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Production Status](https://img.shields.io/badge/Production-Live%20v1.0.4-emerald.svg)](https://api.sentinelfleet.tech/health)
 [![Test Suite](https://img.shields.io/badge/Tests-10%2F10%20Passing%20(0.65ms)-brightgreen.svg)](tests/)
-[![Latency Benchmark](https://img.shields.io/badge/Latency-Target%20%3C45ms-blue.svg)](#certified-benchmarks)
+[![Latency Benchmark](https://img.shields.io/badge/Latency-Target%20%3C45ms-blue.svg)](#performance-benchmarks)
 [![Security Hardening](https://img.shields.io/badge/Security-7--Layer%20Defense-purple.svg)](#7-layer-production-defense-matrix)
 [![Supported Chains](https://img.shields.io/badge/Chains-Solana%20%7C%20Arbitrum%20%7C%20Optimism%20%7C%20Base-orange.svg)](#architecture)
 
@@ -23,7 +23,7 @@
 
 ## 7-Layer Production Defense Matrix
 
-The system runs under a zero-trust, defense-in-depth architecture certified in production:
+The system runs under a zero-trust, defense-in-depth architecture tested in production:
 
 | Layer | Domain | Implementation | Security Guarantee |
 | :--- | :--- | :--- | :--- |
@@ -71,9 +71,9 @@ The system runs under a zero-trust, defense-in-depth architecture certified in p
 
 ---
 
-## Certified Benchmarks
+## Performance Benchmarks
 
-All performance metrics are audited and reproducibly verifiable in production:
+All performance metrics are verified and reproducibly tested in production:
 
 | Benchmark Metric | Measured Performance | Industry SLA / Baseline | Status |
 | :--- | :--- | :--- | :--- |

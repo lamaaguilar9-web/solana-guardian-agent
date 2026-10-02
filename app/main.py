@@ -11,7 +11,7 @@ import uvicorn
 
 from config.settings import settings
 from app.api.v1.health import router as health_router
-from app.core.geyser_client import YellowstoneGeyserClient
+from app.core.geyser_client import SolanaRPCPollClient
 from app.services.oracle_service import OracleService
 from app.core.detector import AnomalyDetector
 from app.core.simulator import StateSimulator
@@ -28,7 +28,7 @@ app = FastAPI(
 app.include_router(health_router, prefix="/api/v1")
 
 # Singletons
-geyser = YellowstoneGeyserClient()
+geyser = SolanaRPCPollClient()
 oracles = OracleService()
 detector = AnomalyDetector()
 simulator = StateSimulator()

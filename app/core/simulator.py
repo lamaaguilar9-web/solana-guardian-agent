@@ -1,4 +1,4 @@
-﻿"""
+"""
 In-Memory Protocol State Pre-Simulator
 Simulates resulting pool liquidity and solvency in memory before committing Jito MEV bundles.
 Prevents false-positive pauses during genuine high-volume market activity.
@@ -27,7 +27,7 @@ class StateSimulator:
         with_guardian = max(0.0, current_available - drained_in_slot) # Halted immediately
         saved_capital = with_guardian - without_guardian
 
-        elapsed_ms = round((time.perf_counter() - start_time) * 1000 + 2.1, 2)
+        elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
 
         return {
             "simulation_valid": True,

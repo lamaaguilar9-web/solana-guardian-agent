@@ -188,7 +188,7 @@ class AnomalyDetector:
         if probing_detected:
             threat_score += 0.15
 
-        eval_latency_ms = round((time.perf_counter() - start_eval) * 1000 + 3.8, 2)
+        eval_latency_ms = round((time.perf_counter() - start_eval) * 1000, 3)
         should_trigger = threat_score >= 0.75 and invariant_broken
 
         return {

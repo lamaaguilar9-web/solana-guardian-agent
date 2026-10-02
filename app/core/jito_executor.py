@@ -136,17 +136,29 @@ class JitoMEVExecutor:
         )
         ix = resolved_ix_data["instruction"]
         
-        bundle_seed = f"JITO_BUNDLE_{asset_target}_{slot}_{kms_signature['signature_hex']}_{dynamic_fee}".encode()
-        bundle_hash = hashlib.sha256(bundle_seed).hexdigest()
-        
-        # Parallel regional transmission simulation (< 15 ms via persistent gRPC stream)
-        elapsed_ms = round((time.perf_counter() - start_time) * 1000 + 7.8, 2)
+        # Real latency measurement (GLM SOL-C1, C5: zero synthetic offsets)
+        elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
+
+        # Honest Jito Dry-Run mode (GLM SOL-C1: zero fabricated hashes, no fake gRPC claim)
+        signer_key = getattr(settings, "JITO_SIGNER_KEY", None)
+        if not signer_key:
+            execution_status = "JITO_DRY_RUN"
+            channel = "JITO_DRY_RUN (Simulated Pipeline)"
+            bundle_hash = None
+            broadcasted_endpoints = []
+            note = "Dry-run mode: On-chain Jito bundle broadcast gated pending signer key injection."
+        else:
+            execution_status = "JITO_DISPATCH_ARMED"
+            channel = "HTTPS_Block_Engine_Bundle_Relay"
+            bundle_hash = None
+            broadcasted_endpoints = self.regional_endpoints
+            note = "Key detected: Ready for Block Engine relay."
 
         return {
-            "execution_status": "COMMITTED_IN_NEXT_SLOT",
-            "channel": "gRPC_Direct_Block_Engine_Stream",
-            "regional_endpoints_broadcasted": self.regional_endpoints,
-            "jito_bundle_hash": "bundle_" + bundle_hash[:32],
+            "execution_status": execution_status,
+            "channel": channel,
+            "regional_endpoints_broadcasted": broadcasted_endpoints,
+            "jito_bundle_hash": bundle_hash,
             "action_executed": f"{resolved_ix_data['instruction_name']}('{asset_target}')",
             "target_protocol": resolved_ix_data["protocol_name"],
             "authorization_mode": resolved_ix_data["authorization_mode"],
@@ -154,21 +166,10 @@ class JitoMEVExecutor:
             "anchor_instruction": repr(ix),
             "priority_tip_lamports": dynamic_fee,
             "tip_strategy": "EMERGENCY_FIXED" if is_severe_drain else "DYNAMIC_P99_VAR_SCALED",
-            "target_slot": slot + 1,
+            "target_slot": slot + 1 if slot else None,
             "dispatch_latency_ms": elapsed_ms,
             "isolated_asset": asset_target,
-            "protocol_wide_halt": False  # Granular pause prevents full protocol blackout
+            "protocol_wide_halt": False,
+            "note": note
         }
 
-    # EVM Flashbots Adaptation Hook
-    def dispatch_flashbots_bundle_evm(self, target_contract: str, signed_call_data: str) -> Dict[str, Any]:
-        """
-        EVM Flashbots builder interface (Titan / BeaverBuild / MEV-Share).
-        Ensures identical sub-second mitigation on Ethereum and Layer 2s.
-        """
-        return {
-            "adapter": "Flashbots_Private_Relay_EVM",
-            "status": "SENT_TO_BUILDERS",
-            "target": target_contract,
-            "bypassed_mempool": True
-        }

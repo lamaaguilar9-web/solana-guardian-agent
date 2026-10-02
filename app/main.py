@@ -100,7 +100,7 @@ DASHBOARD_HTML = """
                     </div>
                     <p class="text-xs text-slate-400 font-mono flex items-center gap-1.5 mt-0.5">
                         <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-beacon"></span>
-                        LIVE NODE: <span class="text-slate-300">2.25.121.124:8000</span> (US-East Cluster)
+                        NODE STATUS: <span class="text-slate-300">127.0.0.1:8000</span> (Loopback Confined)
                     </p>
                 </div>
             </div>
@@ -139,10 +139,10 @@ DASHBOARD_HTML = """
             <div class="rounded-xl bg-slate-900/80 border border-slate-800 p-4 shadow-lg hover:border-solemerald/40 transition">
                 <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider flex justify-between">
                     <span>SLA de Latencia</span>
-                    <span class="text-solemerald font-bold">STRICT &lt; 45ms</span>
+                    <span class="text-solemerald font-bold">TARGET &lt; 45ms</span>
                 </div>
                 <div class="mt-2 flex items-baseline gap-2">
-                    <span id="metric-latency" class="text-3xl font-black font-mono text-solemerald">41.2</span>
+                    <span id="metric-latency" class="text-3xl font-black font-mono text-solemerald">&lt; 30</span>
                     <span class="text-sm font-mono text-slate-400">ms</span>
                 </div>
                 <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
@@ -153,12 +153,12 @@ DASHBOARD_HTML = """
             <div class="rounded-xl bg-slate-900/80 border border-slate-800 p-4 shadow-lg hover:border-cyberblue/40 transition">
                 <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider flex justify-between">
                     <span>Ingesta Mempool</span>
-                    <span class="text-cyberblue font-bold">16.87 ms</span>
+                    <span class="text-cyberblue font-bold">RPC Poll / Geyser</span>
                 </div>
                 <div class="mt-2 text-lg font-bold font-mono text-white flex items-center gap-2">
-                    <span>📡 Yellowstone gRPC</span>
+                    <span>📡 RPC / Geyser Client</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-2 font-mono">Ashburn NYC Direct Stream</p>
+                <p class="text-xs text-slate-400 mt-2 font-mono">Target: &lt; 8 ms Ingestion</p>
             </div>
 
             <div class="rounded-xl bg-slate-900/80 border border-slate-800 p-4 shadow-lg hover:border-solpurple/40 transition">
@@ -208,7 +208,7 @@ DASHBOARD_HTML = """
                         <span class="text-xs font-mono font-bold text-red-400 uppercase tracking-wider flex items-center gap-1.5">
                             <span class="text-base">🚨</span> Escenario de Ataque Flash-Loan
                         </span>
-                        <span class="text-xs font-mono px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">Exploit $17.5M</span>
+                        <span class="text-xs font-mono px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">Simulación Exploit</span>
                     </div>
                     <p class="text-sm font-semibold text-white mt-1">Disparar Invariante Rota & Despacho Jito MEV</p>
                     <p class="text-xs text-slate-400 font-mono mt-1.5">Verifica detección sub-45ms y congelamiento automático de la reserva.</p>
@@ -236,14 +236,14 @@ DASHBOARD_HTML = """
                         <span class="h-2.5 w-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
                         <span class="ml-2 font-bold text-slate-300">TELEMETRY CONSOLE STREAM [RAW]</span>
                     </div>
-                    <span id="clock-slot">SLOT: 446515620</span>
+                    <span id="clock-slot">SLOT: REAL-TIME RPC</span>
                 </div>
 
                 <div id="terminal-logs" class="space-y-1.5 text-slate-300 min-h-[160px] max-h-[220px] overflow-y-auto">
-                    <div class="text-slate-500 font-mono">[00:00:00.000] Initializing Yellowstone Geyser connection on port 8000... OK</div>
-                    <div class="text-slate-500 font-mono">[00:00:00.015] Jito Block Engine gRPC warm connection established (Ashburn / SLC)... OK</div>
-                    <div class="text-slate-500 font-mono">[00:00:00.030] Accounting Invariant Filter active: Delta_Debt / Delta_Collateral threshold set to 0.08</div>
-                    <div class="text-emerald-400 font-mono font-semibold">[READY] Autonomous Centinela armado. Esperando selección de escenario...</div>
+                    <div class="text-slate-500 font-mono">[READY] Solana RPC Poll / Geyser client inicializado en 127.0.0.1:8000</div>
+                    <div class="text-slate-500 font-mono">[READY] Jito Executor configurado en modo JITO_DRY_RUN (honest simulation)</div>
+                    <div class="text-slate-500 font-mono">[READY] Invariante contable activo: Delta_Debt / Delta_Collateral &lt; 0.08</div>
+                    <div class="text-emerald-400 font-mono font-semibold">[STANDBY] Centinela armado. Esperando selección de escenario...</div>
                 </div>
             </div>
 
@@ -257,12 +257,12 @@ DASHBOARD_HTML = """
                 <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
                     <div class="text-[11px] font-mono text-slate-400 uppercase">Latencia Total de Ejecución</div>
                     <div id="res-latency" class="text-2xl font-black font-mono text-solemerald mt-1">-</div>
-                    <div class="text-xs text-emerald-400 font-mono mt-1">⚡ Supera SLA &lt; 45ms</div>
+                    <div class="text-xs text-emerald-400 font-mono mt-1">⚡ Medición Real de Pipeline</div>
                 </div>
                 <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
                     <div class="text-[11px] font-mono text-slate-400 uppercase">Capital Protegido Preservado</div>
-                    <div id="res-funds" class="text-2xl font-black font-mono text-white mt-1">$17,500,000 USD</div>
-                    <div class="text-xs text-slate-400 font-mono mt-1">Reserva Kamino / Solend</div>
+                    <div id="res-funds" class="text-2xl font-black font-mono text-white mt-1">-</div>
+                    <div class="text-xs text-slate-400 font-mono mt-1">Cálculo de Invariante de Reserva</div>
                 </div>
             </div>
         </div>
@@ -290,25 +290,30 @@ DASHBOARD_HTML = """
         async function triggerExploit() {
             const btn = document.getElementById('btn-exploit');
             btn.disabled = true;
-            appendLog('--- INICIANDO ATAQUE FLASH-LOAN SINTÉTICO ($17.5M) ---', 'text-yellow-400 font-bold');
-            appendLog('Ingesta Yellowstone Geyser: Drenado anormal detectado en pool Kamino USDC...', 'text-slate-300');
+            appendLog('--- INICIANDO SIMULACIÓN DE ATAQUE FLASH-LOAN ---', 'text-yellow-400 font-bold');
+            appendLog('Ingesta RPC/Geyser: Analizando flujo de transacciones en slot...', 'text-slate-300');
             
             try {
-                const startTime = performance.now();
                 const res = await fetch('/api/v1/simulate-attack', { method: 'POST' });
                 const data = await res.json();
                 
                 const proof = data.incident_proof || {};
-                const latency = (proof.metrics && proof.metrics.total_end_to_end_latency_ms) ? proof.metrics.total_end_to_end_latency_ms : '41.8';
+                const latency = (proof.metrics && proof.metrics.total_end_to_end_latency_ms != null) ? proof.metrics.total_end_to_end_latency_ms : 'N/A';
                 const action = (proof.mitigation_summary && proof.mitigation_summary.action_type) ? proof.mitigation_summary.action_type : 'GRANULAR_ASSET_PAUSE';
-                const bundleHash = (proof.mitigation_summary && proof.mitigation_summary.jito_bundle_hash) ? proof.mitigation_summary.jito_bundle_hash : '0x7b819f...';
+                const bundleHash = (proof.mitigation_summary && proof.mitigation_summary.jito_bundle_hash) ? proof.mitigation_summary.jito_bundle_hash : null;
+                const preservedUSD = (proof.mitigation_summary && proof.mitigation_summary.capital_preserved_usd != null) ? Number(proof.mitigation_summary.capital_preserved_usd) : 0;
+                const preservedStr = '$' + preservedUSD.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' USD';
 
-                appendLog('EVALUACIÓN INVARIANTE: Salida de colateral $7.0M sin pago de deuda correspondiente.', 'text-red-400 font-semibold');
-                appendLog('CRÍTICO: Invariante contable violada (Ratio: 0.000 < 0.08). AMENAZA CONFIRMADA.', 'text-red-500 font-bold');
-                appendLog('Despachando Bundle Jito MEV con propina p99 de emergencia a validador...', 'text-cyan-400 font-semibold');
+                appendLog('EVALUACIÓN INVARIANTE: Salida de colateral sin amortización de deuda correspondiente.', 'text-red-400 font-semibold');
+                appendLog('CRÍTICO: Invariante contable violada. Amenaza confirmada.', 'text-red-500 font-bold');
+                appendLog('Ejecutando mitigación de emergencia (Jito MEV bundle dispatch)...', 'text-cyan-400 font-semibold');
                 appendLog('INTERCEPTADO: ' + data.status + ' en ' + latency + ' ms!', 'text-emerald-400 font-bold');
-                appendLog('Transacción de Pausa Hash: ' + bundleHash.substring(0, 36) + '...', 'text-slate-400');
-                appendLog('FONDOS PRESERVADOS: $17,500,000 USD. Pausa granular completada.', 'text-solemerald font-black');
+                if (bundleHash) {
+                    appendLog('Transacción de Pausa Hash: ' + String(bundleHash).substring(0, 36) + '...', 'text-slate-400');
+                } else {
+                    appendLog('Transacción de Pausa: JITO_DRY_RUN (simulación honesta sin clave privada)', 'text-slate-400');
+                }
+                appendLog('FONDOS PRESERVADOS: ' + preservedStr + '. Pausa granular completada.', 'text-solemerald font-black');
 
                 // Update UI Badges
                 document.getElementById('status-badge').className = 'px-4 py-1.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-300 font-mono text-xs font-bold tracking-wider flex items-center gap-2 w-fit';
@@ -318,7 +323,7 @@ DASHBOARD_HTML = """
                 document.getElementById('res-status').textContent = 'HALTED (INTERCEPTADO)';
                 document.getElementById('res-action').textContent = action;
                 document.getElementById('res-latency').textContent = latency + ' ms';
-                document.getElementById('res-funds').textContent = '$17,500,000.00 USD';
+                document.getElementById('res-funds').textContent = preservedStr;
             } catch (err) {
                 appendLog('Error en simulación: ' + err, 'text-red-500');
             } finally {
@@ -328,11 +333,11 @@ DASHBOARD_HTML = """
 
         function triggerLiquidation() {
             appendLog('--- INICIANDO SIMULACIÓN DE CASCADA DE LIQUIDACIÓN DE MERCADO ---', 'text-cyan-400 font-bold');
-            appendLog('Mercado cae 18%: Liquidadores masivos retirando $4.2M en colateral...', 'text-slate-300');
+            appendLog('Simulando caída de mercado con liquidadores amortizando deuda...', 'text-slate-300');
             setTimeout(() => {
-                appendLog('EVALUACIÓN INVARIANTE: Salida de colateral compensada con extinción de deuda (Ratio = 0.81 >= 0.65).', 'text-cyan-300');
+                appendLog('EVALUACIÓN INVARIANTE: Salida de colateral compensada con amortización de deuda.', 'text-cyan-300');
                 appendLog('RESULTADO: Invariante contable íntegra. Liquidación de mercado legítima.', 'text-emerald-400 font-bold');
-                appendLog('ACCIÓN: Cero falsas alarmas. Circuit breaker permanece abierto y en standby.', 'text-slate-300');
+                appendLog('ACCIÓN: Cero falsas alarmas. Circuit breaker permanece en standby.', 'text-slate-300');
             }, 300);
         }
     </script>
@@ -347,20 +352,17 @@ INDEX_PATH = TEMPLATES_DIR / "index.html"
 async def serve_dashboard():
     if INDEX_PATH.exists():
         return FileResponse(INDEX_PATH, media_type="text/html")
-    alt_dash = TEMPLATES_DIR / "solana_guardian_dashboard.html"
-    if alt_dash.exists():
-        return FileResponse(alt_dash, media_type="text/html")
     return HTMLResponse(content=DASHBOARD_HTML)
 
 @app.post("/api/v1/simulate-attack")
-def run_attack_simulation():
+async def run_attack_simulation():
     """
-    Executes an end-to-end synthetic exploit replay (Sub-30ms Production SLA):
-    1. Geyser streams slot data (< 8 ms)
-    2. Pyth Hermes vs Binance CEX desync detected, Switchboard offline (< 5 ms)
-    3. State simulated in memory (< 2 ms)
-    4. KMS signs & Jito MEV bundle committed (< 11 ms)
-    Total end-to-end latency: 26.0 ms benchmark!
+    Executes an end-to-end synthetic exploit replay:
+    1. Geyser streams slot data
+    2. Real OracleService evaluates Pyth Hermes vs Binance CEX
+    3. State simulated in memory
+    4. KMS signs & Jito MEV bundle committed in JITO_DRY_RUN
+    Real measured latency without synthetic constants.
     """
     overall_start = time.perf_counter()
 
@@ -368,13 +370,21 @@ def run_attack_simulation():
     telemetry = geyser.fetch_slot_telemetry()
     pool_state = geyser.stream_lending_pool_reserves()
 
-    # Stage 2: Oracle verification (Pyth Hermes vs Binance CEX, Switchboard deprecated)
-    oracle_check = oracles.validate_price_feed(
-        token="SOL",
-        pyth_price=132.50,
-        switchboard_price=None,
-        cex_spot_ref=141.00 # 6.0% deviation -> Critical anomaly!
-    )
+    # Stage 2: Real live oracle divergence check (Pyth Hermes SOL feed vs Binance SOLUSDT)
+    pyth_sol_id = "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+    try:
+        oracle_check = await oracles.evaluate_divergence(
+            token_symbol="SOL",
+            pyth_id=pyth_sol_id,
+            cex_pair="SOLUSDT"
+        )
+    except Exception:
+        oracle_check = {
+            "token": "SOL",
+            "is_anomaly": False,
+            "is_manipulated": False,
+            "status": "FALLBACK"
+        }
 
     # Synthetic attack transaction batch
     attack_batch = [
@@ -398,9 +408,8 @@ def run_attack_simulation():
         slot=telemetry["current_slot"]
     )
 
-    # Certified sub-30ms benchmark (Target: 26.0 ms)
-    total_latency_ms = round((time.perf_counter() - overall_start) * 1000 + 7.8, 2)
-    total_latency_ms = min(total_latency_ms, 26.0)
+    # Exact measured timing (eliminated fake +7.8ms and min 26.0 clamp)
+    total_latency_ms = round((time.perf_counter() - overall_start) * 1000, 3)
 
     # Stage 6: Incident Proof Generation
     proof = notifier.generate_incident_proof(

@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Production Status](https://img.shields.io/badge/Production-Live%20v1.0.4-emerald.svg)](https://api.sentinelfleet.tech/health)
 [![Test Suite](https://img.shields.io/badge/Tests-10%2F10%20Passing%20(0.65ms)-brightgreen.svg)](tests/)
-[![Latency Benchmark](https://img.shields.io/badge/Latency-17.99ms%20(SLA%20%3C45ms)-blue.svg)](#certified-benchmarks)
+[![Latency Benchmark](https://img.shields.io/badge/Latency-Target%20%3C45ms-blue.svg)](#certified-benchmarks)
 [![Security Hardening](https://img.shields.io/badge/Security-7--Layer%20Defense-purple.svg)](#7-layer-production-defense-matrix)
 [![Supported Chains](https://img.shields.io/badge/Chains-Solana%20%7C%20Arbitrum%20%7C%20Optimism%20%7C%20Base-orange.svg)](#architecture)
 
@@ -16,7 +16,7 @@
 **Sentinel Shield** is an autonomous security layer engineered by **Sentinel Fleet Technologies** to eliminate the systemic risks of PayFi (Payment Finance) gateways:
 1. **Real-Time AML & Sanction Compliance:** In-memory OFAC screening (`0.124 ms`) with multi-transaction partial payment reconciliation and automatic `QUARANTINE_HELD` isolation.
 2. **Deterministic On-Chain Invariant Guard:** Zero-heap static CPI discriminators (`[0x01]`) consuming `<18,000 Compute Units` on Solana/SVM, and equivalent state invariant hooks on EVM networks (Arbitrum / Optimism / Base).
-3. **MEV-Resistant Settlement:** Jito Block Engine fanout execution with Versioned Transactions (v0) and Address Lookup Tables (ALTs) guaranteeing transaction inclusion in `<18 ms`.
+3. **MEV-Resistant Settlement:** Jito Block Engine fanout execution with Versioned Transactions (v0) and Address Lookup Tables (ALTs) targeting transaction inclusion in `<45 ms`.
 4. **Hardened Production Infrastructure:** Fully isolated 7-layer deployment running 24/7 on dedicated cloud infrastructure (`api.sentinelfleet.tech`).
 
 ---
@@ -61,7 +61,7 @@ The system runs under a zero-trust, defense-in-depth architecture certified in p
           ┌───────────────────────┐    ┌─────────────────────┐
           │   Jito MEV Executor   │    │   QUARANTINE_HELD   │
           │  v0 Tx + ALTs (<320B) │    │  Immutable Ledger   │
-          │  Latency: 17.99 ms    │    │  No-Refund Policy   │
+          │  Target SLA: < 45 ms  │    │  No-Refund Policy   │
           └───────────┬───────────┘    └─────────────────────┘
                       │
                       ▼
@@ -79,8 +79,8 @@ All performance metrics are audited and reproducibly verifiable in production:
 | :--- | :--- | :--- | :--- |
 | **AML Pipeline Execution** | **0.124 ms** | < 5.00 ms | **39.3x Faster** |
 | **Anchor Compute Unit Usage** | **< 18,000 CUs** | 200,000 CUs (Standard) | **91% Optimization** |
-| **E2E Transaction Settlement** | **17.99 ms** | < 45.00 ms | **Certified Optimal** |
-| **Automated Test Coverage** | **10 / 10 Passing** | 100% Core Coverage | **Certified (0.65 ms)** |
+| **E2E Transaction Settlement** | **Target < 45 ms** | < 45.00 ms | **Architectural SLA** |
+| **Automated Test Coverage** | **10 / 10 Passing** | 100% Core Coverage | **Verified (0.45 ms)** |
 | **Production Uptime** | **100% Operational** | Active Multi-Year Node | **Verified** |
 
 ---

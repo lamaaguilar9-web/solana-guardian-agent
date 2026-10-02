@@ -49,7 +49,7 @@ class IncidentNotifier:
                 "action_type": "GRANULAR_ASSET_PAUSE",
                 "isolated_asset": asset,
                 "jito_bundle_hash": execution_data.get("jito_bundle_hash"),
-                "capital_preserved_usd": simulation_data.get("liquidity_preserved_usd", 24_500_000.0)
+                "capital_preserved_usd": simulation_data.get("liquidity_preserved_usd", 0.0)
             },
             "governance_recovery": {
                 "unfreeze_mechanism": "SQUADS_MULTISIG_REQUIRED",
@@ -61,12 +61,15 @@ class IncidentNotifier:
     def dispatch_alerts(self, incident_proof: Dict[str, Any]) -> Dict[str, Any]:
         """
         Sends payload to webhooks asynchronously or synchronously.
+        Only reports channels that were genuinely configured and contacted.
         """
         dispatched_channels = []
+        unconfigured_channels = []
         
         # 1. Discord Webhook
         if self.discord_webhook and self.discord_webhook.startswith("http"):
             try:
+                bundle_str = incident_proof['mitigation_summary'].get('jito_bundle_hash') or "N/A (JITO_DRY_RUN)"
                 payload = {
                     "username": "Solana Guardian Agent (HFT Alert)",
                     "content": f"🚨 **CRITICAL DEFENSE ACTIVATED: Asset {incident_proof['mitigation_summary']['isolated_asset']} paused in {incident_proof['metrics']['total_end_to_end_latency_ms']} ms!**",
@@ -75,7 +78,7 @@ class IncidentNotifier:
                         "color": 15158332,
                         "fields": [
                             {"name": "Preserved TVL", "value": f"${incident_proof['mitigation_summary']['capital_preserved_usd']:,.2f}", "inline": True},
-                            {"name": "Jito Bundle", "value": f"`{incident_proof['mitigation_summary']['jito_bundle_hash']}`", "inline": True},
+                            {"name": "Jito Bundle", "value": f"`{bundle_str}`", "inline": True},
                             {"name": "Recovery Authority", "value": incident_proof['governance_recovery']['unfreeze_mechanism'], "inline": True}
                         ]
                     }]
@@ -84,12 +87,27 @@ class IncidentNotifier:
                 dispatched_channels.append("Discord")
             except Exception as e:
                 logger.warning(f"Discord dispatch error: {e}")
+        else:
+            unconfigured_channels.append("Discord (not_configured)")
 
-        # Simulated PagerDuty / Slack / Telegram channels
-        dispatched_channels.extend(["PagerDuty", "Telegram", "Slack"])
+        # 2. Telegram Bot
+        if self.telegram_token and self.telegram_chat:
+            try:
+                tg_url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
+                tg_msg = f"🚨 SOLANA GUARDIAN DEFENSE: Asset {incident_proof['mitigation_summary']['isolated_asset']} paused in {incident_proof['metrics']['total_end_to_end_latency_ms']} ms."
+                requests.post(tg_url, json={"chat_id": self.telegram_chat, "text": tg_msg}, timeout=2.0)
+                dispatched_channels.append("Telegram")
+            except Exception as e:
+                logger.warning(f"Telegram dispatch error: {e}")
+        else:
+            unconfigured_channels.append("Telegram (not_configured)")
+
+        # PagerDuty & Slack
+        unconfigured_channels.extend(["PagerDuty (not_configured)", "Slack (not_configured)"])
         
         return {
-            "status": "DISPATCHED",
+            "status": "DISPATCHED" if dispatched_channels else "LOGGED_ONLY",
             "channels_notified": dispatched_channels,
+            "channels_unconfigured": unconfigured_channels,
             "incident_id": incident_proof["incident_id"]
         }

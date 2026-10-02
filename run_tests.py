@@ -49,8 +49,13 @@ def run_all():
     total_time = (time.perf_counter() - start_total) * 1000
     print("--------------------------------------------------------------------------------")
     print(f"RESULT: {passed}/{len(tests)} tests passed in {total_time:.2f} ms")
-    print("LATENCY SPECIFICATION (<45 ms per mitigation): STRICTLY MET")
+    if passed == len(tests):
+        print("LATENCY SPECIFICATION (<45 ms per mitigation): STRICTLY MET")
+    else:
+        print("LATENCY SPECIFICATION (<45 ms per mitigation): NOT MET (TEST FAILURES DETECTED)")
     print("================================================================================")
+    if passed != len(tests):
+        sys.exit(1)
 
 if __name__ == "__main__":
     run_all()

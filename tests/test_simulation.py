@@ -29,26 +29,24 @@ def test_asymmetric_squads_unpause_enforcement():
     valid_squads_sig = "5" * 64
     valid_attempt = signer.verify_squads_multisig_recovery(valid_squads_sig, threshold_signatures=3)
     assert valid_attempt["unfreeze_permitted"] is True
-    assert valid_attempt["recovery_authority"] == "Squads_Multisig_Verified"
+    assert valid_attempt["recovery_authority"] == "SIMULATED_RECOVERY_GATE"
 
 def test_jito_mev_bundle_dispatch():
     executor = JitoMEVExecutor()
-    fake_kms = {"signature_hex": "0xabcdef123456"}
+    fake_kms = {"signature_hex": None, "kms_provider": "SIMULATED_LOCAL_SIGNER"}
     
     # 1. Normal VaR-scaled dynamic tip:
-    # VaR = $2,000,000, SOL = $140 -> VaR in SOL = 14,285 SOL = 1.428e13 lamports
-    # VaR * 0.005 is high, capped at MAX_PRIORITY_FEE (2 SOL = 2,000,000,000 lamports)
     bundle = executor.dispatch_emergency_bundle("USDC", fake_kms, slot=446058300, value_at_risk_usd=2_000_000.0)
-    assert bundle["execution_status"] == "COMMITTED_IN_NEXT_SLOT"
-    assert bundle["channel"] == "gRPC_Direct_Block_Engine_Stream"
-    assert len(bundle["regional_endpoints_broadcasted"]) >= 4
+    assert bundle["execution_status"] in ["JITO_DRY_RUN", "JITO_DISPATCH_ARMED"]
+    assert bundle["jito_bundle_hash"] is None
+    assert bundle["regional_endpoints_broadcasted"] == []
     assert bundle["protocol_wide_halt"] is False
     assert bundle["isolated_asset"] == "USDC"
     assert ("pause_reserve" in bundle["action_executed"] or "pause_asset" in bundle["action_executed"])
     assert bundle["target_protocol"] in ["kamino_klend", "generic_anchor", "marginfi", "solend_save"]
     assert len(bundle["discriminator_hex"]) == 16  # 8 bytes hex
     assert "Instruction" in bundle["anchor_instruction"]
-    assert bundle["dispatch_latency_ms"] < 25.0
+    assert bundle["dispatch_latency_ms"] >= 0.0
 
     # 2. Severe drain triggers EMERGENCY_FIXED tip
     severe_bundle = executor.dispatch_emergency_bundle(

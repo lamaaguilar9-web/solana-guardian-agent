@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # System Info
     PROJECT_NAME: str = "Solana DeFi Guardian Agent"
-    VERSION: str = "1.4.1"
+    VERSION: str = "1.0.0"
     ENVIRONMENT: str = "production"
     
     # 1. Ingestion (Yellowstone Geyser gRPC & Solana RPC)
@@ -27,17 +27,19 @@ class Settings(BaseSettings):
     DEFAULT_JITO_TIP_LAMPORTS: int = Field(default=100_000, env="DEFAULT_JITO_TIP_LAMPORTS")
     JITO_TIP_P99_LAMPORTS: int = Field(default=5_000_000, env="JITO_TIP_P99_LAMPORTS")  # p99 floor baseline
     EMERGENCY_FIXED_TIP_LAMPORTS: int = Field(default=1_000_000_000, env="EMERGENCY_FIXED_TIP_LAMPORTS")  # 1.0 SOL emergency tip
+    JITO_SIGNER_KEY: Optional[str] = Field(default=None, env="JITO_SIGNER_KEY")
+    JITO_DRY_RUN: bool = Field(default=True, env="JITO_DRY_RUN")
     
     # Invariant Filters (Exploit vs Legitimate Liquidations)
     OUTFLOW_EPSILON_INVARIANT: float = Field(default=0.05, env="OUTFLOW_EPSILON_INVARIANT")  # Debt repaid / collateral threshold
     TARGET_PROTOCOL: str = Field(default="kamino_klend", env="TARGET_PROTOCOL")  # kamino_klend | marginfi | solend_save | generic_anchor
     AUTHORIZATION_MODE: str = Field(default="direct_guardian_signer", env="AUTHORIZATION_MODE")  # direct_guardian_signer | delegated_pda_cpi
-    LENDING_PROGRAM_ID: str = Field(default="Kamino111111111111111111111111111111111111", env="LENDING_PROGRAM_ID")
+    LENDING_PROGRAM_ID: str = Field(default="KLend2gQjcU6xiprGoMsF9hMYDzR7sFNvjKLGV9V7wnq", env="LENDING_PROGRAM_ID")
     LENDING_MARKET_PUBKEY: str = Field(default="7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF", env="LENDING_MARKET_PUBKEY")
-    GATEWAY_PROGRAM_ID: str = Field(default="Gate111111111111111111111111111111111111111", env="GATEWAY_PROGRAM_ID")
+    GATEWAY_PROGRAM_ID: str = Field(default="Guard1anBreaker111111111111111111111111111111", env="GATEWAY_PROGRAM_ID")
     
     # 3. Key Management & RBAC
-    KMS_PROVIDER: str = Field(default="local_simulated", env="KMS_PROVIDER")
+    KMS_PROVIDER: str = Field(default="SIMULATED_LOCAL_SIGNER", env="KMS_PROVIDER")
     KMS_KEY_ID: str = Field(default="projects/sentinel-lab/locations/global/keyRings/guardian/cryptoKeys/pause-signer", env="KMS_KEY_ID")
     SQUADS_MULTISIG_PROGRAM_ID: str = Field(default="SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf", env="SQUADS_MULTISIG_PROGRAM_ID")
     SQUADS_VAULT_ADDRESS: str = Field(default="SquadsRecoveryVaultAddress11111111111111111", env="SQUADS_VAULT_ADDRESS")

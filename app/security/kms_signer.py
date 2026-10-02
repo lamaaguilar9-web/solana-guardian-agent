@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cloud KMS / Hardware Security Signer (RBAC & Asymmetric Squads Recovery)
 Restricted strictly to the `guardian_pause` instruction.
 Prevents private key extraction and forbids unilateral reactivation.
@@ -28,13 +28,15 @@ class KMSSecuritySigner:
         # Simulated Cloud KMS ECDSA/Ed25519 signing
         signature = hashlib.sha256(canonical_msg).hexdigest()
         
-        elapsed_ms = round((time.perf_counter() - start_time) * 1000 + 3.8, 2)
+        elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
+        sig_hex = None if self.provider == "SIMULATED_LOCAL_SIGNER" else f"0x{signature}"
         return {
             "authorized": True,
             "instruction": "guardian_pause",
             "asset_target": asset,
             "kms_key_id": self.key_id,
-            "signature_hex": "0x" + signature,
+            "kms_provider": self.provider,
+            "signature_hex": sig_hex,
             "signing_latency_ms": elapsed_ms,
             "rbac_scope": "READ_ONLY_PLUS_PAUSE_INSTRUCTION_STRICT"
         }
@@ -48,7 +50,7 @@ class KMSSecuritySigner:
         if threshold_signatures >= 3 and len(squads_tx_signature) > 32:
             return {
                 "unfreeze_permitted": True,
-                "recovery_authority": "Squads_Multisig_Verified",
+                "recovery_authority": "SIMULATED_RECOVERY_GATE",
                 "multisig_program": self.squads_program_id,
                 "signatures_verified": threshold_signatures
             }

@@ -1,4 +1,4 @@
-﻿FROM python:3.11-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -17,4 +17,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV GUARDIAN_HOST=127.0.0.1
+
+CMD ["sh", "-c", "uvicorn app.main:app --host ${GUARDIAN_HOST:-127.0.0.1} --port 8000"]

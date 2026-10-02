@@ -320,7 +320,7 @@ DASHBOARD_HTML = """
                 document.getElementById('status-badge').innerHTML = '<span class="h-2 w-2 rounded-full bg-red-400 animate-ping"></span> PROTOCOLO: PAUSA PREVENTIVA DISPARADA';
                 
                 document.getElementById('result-box').classList.remove('hidden');
-                document.getElementById('res-status').textContent = 'HALTED (INTERCEPTADO)';
+                document.getElementById('res-status').textContent = data.status || 'SIMULATED_INTERCEPT_DRY_RUN';
                 document.getElementById('res-action').textContent = action;
                 document.getElementById('res-latency').textContent = latency + ' ms';
                 document.getElementById('res-funds').textContent = preservedStr;
@@ -423,7 +423,7 @@ async def run_attack_simulation():
     dispatch_status = notifier.dispatch_alerts(proof)
 
     return {
-        "status": "EXPLOIT_INTERCEPTED_AND_HALTED",
+        "status": "SIMULATED_INTERCEPT_DRY_RUN",
         "incident_proof": proof,
         "dispatch_status": dispatch_status
     }

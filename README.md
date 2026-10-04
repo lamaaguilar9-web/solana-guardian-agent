@@ -145,3 +145,7 @@ This project is actively applying for Web3 Infrastructure & Security Grants ($50
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+> **Privacidad:** Solana Guardian Agent es una herramienta de infraestructura interna. No recopila datos personales de usuarios finales; procesa únicamente datos públicos de blockchain y telemetría técnica generada por el propio sistema. Contacto: luis.growthhq@gmail.com

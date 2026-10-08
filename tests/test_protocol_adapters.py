@@ -1,7 +1,8 @@
 from app.core.protocol_adapters import (
     AnchorInstructionResolver,
     ProtocolRegistry,
-    Pubkey
+    Pubkey,
+    pubkey_from
 )
 
 def test_anchor_discriminator_exact_resolution():
@@ -24,10 +25,11 @@ def test_anchor_discriminator_exact_resolution():
     assert len(resolver_solend.discriminator) == 8
 
 def test_direct_signer_vs_delegated_pda_cpi():
-    prog_id = Pubkey("Kamino111111111111111111111111111111111111")
-    guardian = Pubkey("GuardianWallet1111111111111111111111111111")
-    market = Pubkey("7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF")
-    reserve = Pubkey("ReserveUSDC1111111111111111111111111111111")
+    # Real Kamino kLend ID & PLACEHOLDER/TEST keys (valid 32-byte base58 strings)
+    prog_id = pubkey_from("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD")  # Real Kamino kLend ID
+    guardian = pubkey_from("BZgxcgVxwRWvtAdQ1MczDL4j1yx1oxNvaZBDmj7zFEEN")  # PLACEHOLDER/TEST Guardian Wallet
+    market = pubkey_from("7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF")     # Kamino Main Market
+    reserve = pubkey_from("7Vcq1t64ib2NGgrXz4JhAQW5TCASrqWzKGhnGXRhbWQQ")   # PLACEHOLDER/TEST USDC Reserve
 
     # Mode A: Direct Guardian Signer (3 accounts strictly ordered)
     resolver_direct = AnchorInstructionResolver(

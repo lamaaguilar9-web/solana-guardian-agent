@@ -34,15 +34,17 @@ class Settings(BaseSettings):
     OUTFLOW_EPSILON_INVARIANT: float = Field(default=0.05, env="OUTFLOW_EPSILON_INVARIANT")  # Debt repaid / collateral threshold
     TARGET_PROTOCOL: str = Field(default="kamino_klend", env="TARGET_PROTOCOL")  # kamino_klend | marginfi | solend_save | generic_anchor
     AUTHORIZATION_MODE: str = Field(default="direct_guardian_signer", env="AUTHORIZATION_MODE")  # direct_guardian_signer | delegated_pda_cpi
-    LENDING_PROGRAM_ID: str = Field(default="KLend2gQjcU6xiprGoMsF9hMYDzR7sFNvjKLGV9V7wnq", env="LENDING_PROGRAM_ID")
+    # Verified Mainnet Kamino kLend Program ID
+    LENDING_PROGRAM_ID: str = Field(default="KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD", env="LENDING_PROGRAM_ID")
     LENDING_MARKET_PUBKEY: str = Field(default="7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF", env="LENDING_MARKET_PUBKEY")
-    GATEWAY_PROGRAM_ID: str = Field(default="Guard1anBreaker111111111111111111111111111111", env="GATEWAY_PROGRAM_ID")
+    GATEWAY_PROGRAM_ID: str = Field(default="Ac7GNr7ZJ7TmHD8nZAD299EwTWViPBw51o3cpJti6Gem", env="GATEWAY_PROGRAM_ID")
+    GUARDIAN_PUBKEY: str = Field(default="BZgxcgVxwRWvtAdQ1MczDL4j1yx1oxNvaZBDmj7zFEEN", env="GUARDIAN_PUBKEY")
     
     # 3. Key Management & RBAC
     KMS_PROVIDER: str = Field(default="SIMULATED_LOCAL_SIGNER", env="KMS_PROVIDER")
     KMS_KEY_ID: str = Field(default="projects/sentinel-lab/locations/global/keyRings/guardian/cryptoKeys/pause-signer", env="KMS_KEY_ID")
     SQUADS_MULTISIG_PROGRAM_ID: str = Field(default="SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf", env="SQUADS_MULTISIG_PROGRAM_ID")
-    SQUADS_VAULT_ADDRESS: str = Field(default="SquadsRecoveryVaultAddress11111111111111111", env="SQUADS_VAULT_ADDRESS")
+    SQUADS_VAULT_ADDRESS: str = Field(default="69YrsMgJUr3Z8urehUGgFgJm1HNRYuKx7bXsRWiJXr9L", env="SQUADS_VAULT_ADDRESS")
     
     # 4. Oracles & Outflow
     PYTH_PRICE_SERVICE_URL: str = Field(default="https://hermes.pyth.network", env="PYTH_PRICE_SERVICE_URL")

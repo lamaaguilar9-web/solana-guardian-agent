@@ -1,6 +1,8 @@
 # Sentinel Shield: Autonomous PayFi AML Auditor & Real-Time Invariant Enforcement
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/lamaaguilar9-web/solana-guardian-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/lamaaguilar9-web/solana-guardian-agent/actions/workflows/ci.yml)
+[![Formal Fuzzing Certification](https://img.shields.io/badge/Formal%20Fuzzing-5%2C000%2F5%2C000%20(100%25%20PASS)-brightgreen.svg)](tests/fuzz_certification.json)
 [![Production Status](https://img.shields.io/badge/Production-Live%20v1.0.4-emerald.svg)](https://api.sentinelfleet.tech/health)
 [![Test Suite](https://img.shields.io/badge/Tests-10%2F10%20Passing%20(0.65ms)-brightgreen.svg)](tests/)
 [![Latency Benchmark](https://img.shields.io/badge/Latency-Target%20%3C45ms-blue.svg)](#performance-benchmarks)

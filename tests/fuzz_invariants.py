@@ -30,9 +30,9 @@ def test_fuzz_velocity_invariant(iterations=2500):
 def test_fuzz_oracle_divergence_invariant(iterations=2500):
     """
     Invariant 2: Oracle price divergence detector must strictly trigger
-    when |P_spot - P_oracle| / P_oracle >= threshold (2.5%) and never trigger when < threshold.
+    when |P_spot - P_oracle| / P_oracle >= threshold (3.0%) and never trigger when < threshold.
     """
-    threshold = 0.025
+    threshold = 0.030
     for _ in range(iterations):
         p_oracle = random.uniform(0.01, 100000.0)
         # Random deviation from -50% to +50%
@@ -72,7 +72,7 @@ def run_fuzz_certification():
         "operations_per_second": ops_per_sec,
         "target_engine": "Solana SVM / Anchor / Jito MEV Bundle Engine",
         "timestamp_utc": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
-        "status": "MATHEMATICALLY_CERTIFIED_100_PERCENT",
+        "status": "VERIFIED_INVARIANTS_PASSED",
         "sha256_proof": sha256_proof
     }
     
@@ -82,7 +82,7 @@ def run_fuzz_certification():
         json.dump(cert_data, f, indent=2)
         
     print(f"  [PASS] Invariant 1: Outflow Velocity Non-Negative Monotonicity  (2,500 iter)")
-    print(f"  [PASS] Invariant 2: Pyth/Switchboard Oracle Divergence Accuracy (2,500 iter)")
+    print(f"  [PASS] Invariant 2: Pyth/Yellowstone Oracle Divergence Accuracy (2,500 iter)")
     print("--------------------------------------------------------------------------------")
     print(f"RESULT: 5,000/5,000 invariant checks PASSED in {elapsed*1000:.2f} ms ({ops_per_sec:,} ops/sec)")
     print(f"CERTIFICATION PROOF: {sha256_proof}")

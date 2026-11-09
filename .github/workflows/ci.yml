@@ -25,7 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Core Test Suite (10/10 Invariants)
+      - name: Run Core Test Suite (12/12 Invariants)
         run: python run_tests.py
 
       - name: Run Formal Mathematical Invariant Fuzzing (5,000 Iterations)

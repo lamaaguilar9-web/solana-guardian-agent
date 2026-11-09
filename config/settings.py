@@ -48,7 +48,8 @@ class Settings(BaseSettings):
     
     # 4. Oracles & Outflow
     PYTH_PRICE_SERVICE_URL: str = Field(default="https://hermes.pyth.network", env="PYTH_PRICE_SERVICE_URL")
-    ORACLE_MAX_DIVERGENCE_PCT: float = Field(default=3.5, env="ORACLE_MAX_DIVERGENCE_PCT")
+    ORACLE_MAX_DIVERGENCE_PCT: float = Field(default=3.0, env="ORACLE_MAX_DIVERGENCE_PCT")
+    DEX_BURST_VOLUME_SURGE_RATIO: float = Field(default=3.0, env="DEX_BURST_VOLUME_SURGE_RATIO")
     ORACLE_STALENESS_SECONDS: int = Field(default=15, env="ORACLE_STALENESS_SECONDS")
     OUTFLOW_VELOCITY_WINDOW_MINUTES: int = Field(default=5, env="OUTFLOW_VELOCITY_WINDOW_MINUTES")
     MAX_OUTFLOW_PERCENT_THRESHOLD: float = Field(default=15.0, env="MAX_OUTFLOW_PERCENT_THRESHOLD")

@@ -88,3 +88,48 @@ def test_probing_transaction_heuristics():
     
     eval_probe = detector.detect_compound_exploit([tx_probe_1, tx_probe_2])
     assert eval_probe["probing_detected"] is True
+
+
+def test_oracle_3pct_circuit_breaker():
+    """Directive SF-OPS-2026-NOV09: Oracle Divergence Circuit Breaker at exactly 3.0%."""
+    oracles = OracleService()
+    
+    # Baseline: SOL at $100.0 CEX spot
+    # Case A: 2.5% divergence -> Allowed (SYNCHRONIZED)
+    normal_feed = oracles.validate_price_feed("SOL", pyth_price=102.5, switchboard_price=0.0, cex_spot_ref=100.0)
+    assert normal_feed["is_manipulated"] is False
+    assert normal_feed["oracle_status"] == "SYNCHRONIZED"
+    assert normal_feed["action_required"] == "NORMAL"
+
+    # Case B: 3.1% divergence -> Circuit Breaker Triggered (CRITICAL_DIVERGENCE)
+    critical_feed = oracles.validate_price_feed("SOL", pyth_price=103.1, switchboard_price=0.0, cex_spot_ref=100.0)
+    assert critical_feed["is_manipulated"] is True
+    assert critical_feed["oracle_status"] == "CRITICAL_DIVERGENCE"
+    assert critical_feed["action_required"] == "DEGRADE_LIQUIDATIONS_AND_PAUSE"
+
+
+def test_volumetric_burst_anomaly_detection():
+    """Directive SF-OPS-2026-NOV09: Loopscale DEX burst cross-check with Yellowstone gRPC."""
+    oracles = OracleService()
+
+    # Case A: High volume (4x surge) but low divergence (0.5%) -> No false alarm
+    burst_check_normal = oracles.check_volumetric_burst(current_volume_usd=400_000.0, baseline_volume_usd=100_000.0, divergence_pct=0.5)
+    assert burst_check_normal["is_burst"] is False
+
+    # Case B: High volume surge (3.5x) AND divergence >= 2.0% -> Pre-emptive circuit triggered
+    burst_check_attack = oracles.check_volumetric_burst(current_volume_usd=350_000.0, baseline_volume_usd=100_000.0, divergence_pct=2.3)
+    assert burst_check_attack["is_burst"] is True
+    assert burst_check_attack["status"] == "VOLUMETRIC_BURST_CIRCUIT_TRIGGERED"
+
+    # Feed level test: DEX surge integrated into validate_price_feed
+    feed_burst = oracles.validate_price_feed(
+        token="SOL",
+        pyth_price=102.2,
+        switchboard_price=0.0,
+        cex_spot_ref=100.0,
+        dex_spot_price=102.2,
+        dex_volume_surge_ratio=3.5
+    )
+    assert feed_burst["is_volumetric_burst"] is True
+    assert feed_burst["is_manipulated"] is True
+    assert feed_burst["action_required"] == "DEGRADE_LIQUIDATIONS_AND_PAUSE"

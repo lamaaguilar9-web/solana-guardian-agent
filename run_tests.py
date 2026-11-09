@@ -4,7 +4,9 @@ from tests.test_detector import (
     test_outflow_velocity_threshold,
     test_compound_exploit_detection,
     test_liquidation_wave_vs_exploit_drain,
-    test_probing_transaction_heuristics
+    test_probing_transaction_heuristics,
+    test_oracle_3pct_circuit_breaker,
+    test_volumetric_burst_anomaly_detection
 )
 from tests.test_simulation import (
     test_granular_pause_simulation,
@@ -31,7 +33,9 @@ def run_all():
         ("test_jito_mev_bundle_dispatch", test_jito_mev_bundle_dispatch),
         ("test_anchor_discriminator_exact_resolution", test_anchor_discriminator_exact_resolution),
         ("test_direct_signer_vs_delegated_pda_cpi", test_direct_signer_vs_delegated_pda_cpi),
-        ("test_zero_copy_reserve_header_fastpath", test_zero_copy_reserve_header_fastpath)
+        ("test_zero_copy_reserve_header_fastpath", test_zero_copy_reserve_header_fastpath),
+        ("test_oracle_3pct_circuit_breaker", test_oracle_3pct_circuit_breaker),
+        ("test_volumetric_burst_anomaly_detection", test_volumetric_burst_anomaly_detection)
     ]
 
     passed = 0
@@ -50,9 +54,9 @@ def run_all():
     print("--------------------------------------------------------------------------------")
     print(f"RESULT: {passed}/{len(tests)} tests passed in {total_time:.2f} ms")
     if passed == len(tests):
-        print("LATENCY SPECIFICATION (<45 ms per mitigation): STRICTLY MET")
+        print("AUTOMATED VERIFICATION: ALL INVARIANTS SATISFIED")
     else:
-        print("LATENCY SPECIFICATION (<45 ms per mitigation): NOT MET (TEST FAILURES DETECTED)")
+        print("AUTOMATED VERIFICATION: TEST FAILURES DETECTED")
     print("================================================================================")
     if passed != len(tests):
         sys.exit(1)

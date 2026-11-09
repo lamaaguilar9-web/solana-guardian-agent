@@ -28,7 +28,7 @@ class OracleService:
         self.pyth_hermes_url = pyth_hermes_url or getattr(settings, "PYTH_HERMES_URL", "https://hermes.pyth.network")
         self.binance_api_url = binance_api_url or getattr(settings, "BINANCE_API_URL", "https://api.binance.com")
         self.switchboard_enabled = False  # Desactivado formalmente por cese de servicio 25-Sept-2026
-        self.max_divergence_pct = max_divergence_pct or getattr(settings, "ORACLE_MAX_DIVERGENCE_PCT", 1.5)
+        self.max_divergence_pct = max_divergence_pct or getattr(settings, "ORACLE_MAX_DIVERGENCE_PCT", 3.0)
         self.staleness_limit = staleness_limit or getattr(settings, "ORACLE_STALENESS_SECONDS", 120)
         self.cache: Dict[str, Dict[str, Any]] = {}
 
@@ -89,17 +89,46 @@ class OracleService:
         self.cache[token_symbol] = result
         return result
 
+    def check_volumetric_burst(
+        self,
+        current_volume_usd: float,
+        baseline_volume_usd: float,
+        divergence_pct: float
+    ) -> Dict[str, Any]:
+        """
+        Detección de ráfaga volumétrica anómala (Loopscale exploit safeguard SF-OPS-2026-NOV09).
+        Si el volumen en DEX sube >=300% en <10 slots y la divergencia de oráculo supera 2.0%,
+        dispara la pausa preventiva de emergencia del vault antes de que se autoricen retiros anómalos.
+        """
+        if baseline_volume_usd <= 0:
+            return {"is_burst": False, "volume_surge_ratio": 1.0, "status": "BASELINE_ZERO"}
+        
+        surge_ratio = current_volume_usd / baseline_volume_usd
+        surge_threshold = getattr(settings, "DEX_BURST_VOLUME_SURGE_RATIO", 3.0)
+        is_burst = (surge_ratio >= surge_threshold) and (divergence_pct >= 2.0)
+        
+        return {
+            "is_burst": is_burst,
+            "volume_surge_ratio": round(surge_ratio, 2),
+            "surge_threshold": surge_threshold,
+            "divergence_pct": round(divergence_pct, 3),
+            "status": "VOLUMETRIC_BURST_CIRCUIT_TRIGGERED" if is_burst else "NORMAL_VOLUME"
+        }
+
     def validate_price_feed(
         self,
         token: str,
         pyth_price: float,
         switchboard_price: float,
         cex_spot_ref: float,
-        pyth_timestamp: float = None
+        pyth_timestamp: float = None,
+        dex_spot_price: float = None,
+        dex_volume_surge_ratio: float = None
     ) -> Dict[str, Any]:
         """
-        Validates Pyth against off-chain spot reference (Binance CEX).
+        Validates Pyth against off-chain spot reference (Binance CEX) and Yellowstone DEX stream.
         Switchboard is safely bypassed and marked as DEPRECATED_OFFLINE.
+        Enforces 3.0% maximum divergence circuit-breaker + volumetric burst detection.
         """
         now = time.time()
         pyth_ts = pyth_timestamp or now
@@ -113,8 +142,21 @@ class OracleService:
         pyth_dev_pct = abs(pyth_price - ref_price) / ref_price * 100.0
         max_detected_dev = pyth_dev_pct
 
-        # 3. Threat Assessment
-        is_manipulated = max_detected_dev >= self.max_divergence_pct or is_stale
+        # 3. Cross-check Yellowstone gRPC DEX stream if available
+        dex_dev_pct = 0.0
+        if dex_spot_price and dex_spot_price > 0:
+            dex_dev_pct = abs(pyth_price - dex_spot_price) / dex_spot_price * 100.0
+            if dex_dev_pct > max_detected_dev:
+                max_detected_dev = dex_dev_pct
+
+        # 4. Volumetric burst condition: >=300% surge with >=2.0% divergence
+        is_volumetric_burst = False
+        if dex_volume_surge_ratio and dex_volume_surge_ratio >= getattr(settings, "DEX_BURST_VOLUME_SURGE_RATIO", 3.0):
+            if max_detected_dev >= 2.0:
+                is_volumetric_burst = True
+
+        # 5. Threat Assessment (Threshold at 3.0% or burst anomaly or stale)
+        is_manipulated = max_detected_dev >= self.max_divergence_pct or is_stale or is_volumetric_burst
 
         return {
             "token": token,
@@ -122,9 +164,11 @@ class OracleService:
             "switchboard_price": None if not self.switchboard_enabled else switchboard_price,
             "switchboard_status": "DEPRECATED_OFFLINE",
             "cex_reference_price": cex_spot_ref,
+            "dex_spot_price": dex_spot_price,
             "max_divergence_pct": round(max_detected_dev, 3),
             "is_stale": is_stale,
             "feed_age_seconds": round(age_seconds, 2),
+            "is_volumetric_burst": is_volumetric_burst,
             "is_manipulated": is_manipulated,
             "is_anomaly": is_manipulated,
             "oracle_status": "CRITICAL_DIVERGENCE" if is_manipulated else "SYNCHRONIZED",
